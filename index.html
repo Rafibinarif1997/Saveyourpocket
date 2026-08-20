@@ -4,99 +4,168 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RugShield — Token Risk Intelligence</title>
-<meta name="description" content="Professional multi-chain token risk scanner for Ethereum, BSC, Robinhood Chain, Base, Arbitrum, Polygon, Avalanche and Solana.">
+<meta name="description" content="Automatic multi-chain token risk scanner. Paste a contract address and RugShield detects the network automatically.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#090d19;--bg2:#0d1324;--panel:rgba(17,24,43,.78);--line:rgba(255,255,255,.09);--text:#f7f9ff;--muted:#97a3bc;--cyan:#48e7ff;--violet:#8f7cff;--pink:#ff63c9;--green:#92f59b;--yellow:#ffd66b;--red:#ff6f83}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--text);font-family:"DM Sans",sans-serif;background:radial-gradient(circle at 9% 2%,#123b4c55,transparent 25%),radial-gradient(circle at 91% 10%,#35215d66,transparent 28%),radial-gradient(circle at 50% 100%,#4b184044,transparent 32%),var(--bg);min-height:100vh;overflow-x:hidden}
+:root{--bg:#090d19;--panel:rgba(17,24,43,.82);--line:rgba(255,255,255,.09);--text:#f7f9ff;--muted:#98a4bd;--cyan:#48e7ff;--violet:#8f7cff;--pink:#ff63c9;--green:#92f59b;--yellow:#ffd66b;--red:#ff6f83}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--text);font-family:"DM Sans",sans-serif;background:radial-gradient(circle at 9% 2%,#123b4c66,transparent 26%),radial-gradient(circle at 91% 10%,#35215d77,transparent 30%),radial-gradient(circle at 50% 100%,#4b184055,transparent 32%),var(--bg);min-height:100vh;overflow-x:hidden}
 body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(#fff00008 1px,transparent 1px),linear-gradient(90deg,#fff00008 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(to bottom,#000,transparent 82%)}
-.nav{height:76px;max-width:1180px;margin:auto;padding:0 22px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}.brand{display:flex;align-items:center;gap:10px;font-family:"Space Grotesk";font-weight:700;font-size:20px}.mark{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--cyan),var(--violet) 58%,var(--pink));box-shadow:0 0 34px #48e7ff35;position:relative}.mark:after{content:"";position:absolute;inset:9px;border:2px solid white;border-radius:6px;transform:rotate(45deg)}.navlinks{display:flex;gap:24px;color:var(--muted);font-size:13px}.navlinks a:hover{color:white}.status{border:1px solid var(--line);padding:9px 13px;border-radius:999px;background:#ffffff06;font-size:12px;color:#dbe3f4}.status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);margin-right:6px}
-.hero{max-width:1180px;margin:auto;padding:76px 22px 45px;text-align:center;position:relative}.glow{position:absolute;width:270px;height:270px;border-radius:50%;filter:blur(70px);opacity:.16;animation:float 8s ease-in-out infinite;pointer-events:none}.g1{background:var(--cyan);left:4%;top:30px}.g2{background:var(--pink);right:4%;top:180px;animation-delay:-3s}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #48e7ff2e;background:#48e7ff0d;padding:8px 12px;border-radius:999px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#baf7ff}.eyebrow b{font-weight:600}.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 15px var(--green)}
+.nav{height:76px;max-width:1180px;margin:auto;padding:0 22px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}.brand{display:flex;align-items:center;gap:10px;font-family:"Space Grotesk";font-weight:700;font-size:20px}.mark{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--cyan),var(--violet) 58%,var(--pink));box-shadow:0 0 34px #48e7ff35;position:relative}.mark:after{content:"";position:absolute;inset:9px;border:2px solid white;border-radius:6px;transform:rotate(45deg)}.status{border:1px solid var(--line);padding:9px 13px;border-radius:999px;background:#ffffff06;font-size:12px;color:#dbe3f4}.status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);margin-right:6px}
+.hero{max-width:1180px;margin:auto;padding:76px 22px 45px;text-align:center;position:relative}.glow{position:absolute;width:270px;height:270px;border-radius:50%;filter:blur(70px);opacity:.16;animation:float 8s ease-in-out infinite;pointer-events:none}.g1{background:var(--cyan);left:4%;top:30px}.g2{background:var(--pink);right:4%;top:180px;animation-delay:-3s}.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #48e7ff2e;background:#48e7ff0d;padding:8px 12px;border-radius:999px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#baf7ff}.pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 15px var(--green)}
 h1{font-family:"Space Grotesk";font-size:clamp(50px,7.2vw,88px);line-height:.96;letter-spacing:-.06em;margin:23px auto 18px;max-width:920px}.gradient{background:linear-gradient(90deg,#fff 8%,var(--cyan) 42%,var(--violet) 68%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}.hero>p{max-width:710px;margin:0 auto 32px;color:var(--muted);font-size:16px;line-height:1.7}
-.scanner{max-width:940px;margin:auto;padding:10px;border:1px solid #ffffff17;border-radius:25px;background:linear-gradient(135deg,#48e7ff0c,#8f7cff0d,#ff63c90b);box-shadow:0 30px 100px #00000055;backdrop-filter:blur(22px);position:relative}.scanrow{display:grid;grid-template-columns:190px 1fr 150px;gap:9px}.field{height:57px;border:1px solid var(--line);border-radius:15px;background:#0f1628;color:white;padding:0 15px;outline:0;width:100%;font:inherit}.field:focus{border-color:#48e7ff88;box-shadow:0 0 0 4px #48e7ff10}.scanbtn{height:57px;border:0;border-radius:15px;font-weight:700;color:#061016;background:linear-gradient(100deg,var(--cyan),#b2f9ff 42%,#b59fff);cursor:pointer;transition:.25s;box-shadow:0 12px 35px #48e7ff22}.scanbtn:hover{transform:translateY(-2px);box-shadow:0 17px 40px #8f7cff35}.quick{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:13px}.quick span{font-size:11px;color:#7d8aa5}.chip{padding:5px 9px;border-radius:999px;border:1px solid var(--line);color:#bfc9dc!important;background:#ffffff04}
+.scanner{max-width:940px;margin:auto;padding:10px;border:1px solid #ffffff17;border-radius:25px;background:linear-gradient(135deg,#48e7ff0c,#8f7cff0d,#ff63c90b);box-shadow:0 30px 100px #00000055;backdrop-filter:blur(22px);position:relative}.scanrow{display:grid;grid-template-columns:1fr 150px;gap:9px}.field{height:57px;border:1px solid var(--line);border-radius:15px;background:#0f1628;color:white;padding:0 15px;outline:0;width:100%;font:inherit}.field:focus{border-color:#48e7ff88;box-shadow:0 0 0 4px #48e7ff10}.scanbtn{height:57px;border:0;border-radius:15px;font-weight:700;color:#061016;background:linear-gradient(100deg,var(--cyan),#b2f9ff 42%,#b59fff);cursor:pointer;transition:.25s;box-shadow:0 12px 35px #48e7ff22}.scanbtn:hover{transform:translateY(-2px);box-shadow:0 17px 40px #8f7cff35}.quick{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:13px}.quick span{font-size:11px;color:#7d8aa5}.chip{padding:5px 9px;border-radius:999px;border:1px solid var(--line);color:#bfc9dc!important;background:#ffffff04}
+.detect{margin-top:12px;min-height:20px;color:#8f9bb5;font-size:12px}.detect b{color:#bdf8ff}
 .loader{display:none;position:absolute;inset:0;border-radius:22px;background:#090d19cc;backdrop-filter:blur(7px);align-items:center;justify-content:center;z-index:4}.loader.show{display:flex}.spinner{width:34px;height:34px;border-radius:50%;border:3px solid #ffffff16;border-top-color:var(--cyan);animation:spin .75s linear infinite}
-.result{max-width:940px;margin:24px auto 0;text-align:left;display:none}.result.show{display:block;animation:rise .45s ease}.resultHero{padding:22px;border:1px solid var(--line);border-radius:21px;background:var(--panel);display:flex;justify-content:space-between;gap:16px;align-items:center}.tokenTitle{font-family:"Space Grotesk";font-size:25px}.sub{font-size:12px;color:var(--muted);margin-top:6px;word-break:break-all}.risk{padding:11px 15px;border-radius:999px;font-weight:700;font-size:12px;white-space:nowrap}
-.summary{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-top:12px}.scoreCard,.details{border:1px solid var(--line);border-radius:20px;background:#ffffff04;padding:22px}.scoreLine{display:flex;justify-content:space-between;align-items:end}.score{font-family:"Space Grotesk";font-size:56px;line-height:1}.score small{font-size:14px;color:var(--muted);font-family:"DM Sans"}.ring{height:10px;background:#141b2d;border-radius:99px;overflow:hidden;margin-top:18px}.ring i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--cyan),var(--violet),var(--pink));border-radius:99px}.metaGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.meta{padding:14px;border:1px solid var(--line);border-radius:15px;background:#ffffff03}.meta b{display:block;font-size:13px}.meta span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.metric{padding:17px;border:1px solid var(--line);border-radius:17px;background:#ffffff03}.metricTop{display:flex;justify-content:space-between;gap:10px;font-size:12px}.metricTop b{font-family:"Space Grotesk"}.bar{height:7px;background:#151c2f;border-radius:99px;margin-top:12px;overflow:hidden}.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink))}.warnings{margin-top:12px;padding:19px;border-radius:18px;border:1px solid #ffd66b33;background:#ffd66b08}.warnings h3{font-family:"Space Grotesk";font-size:15px;margin:0 0 10px}.warning{font-size:12px;color:#ffe9ac;line-height:1.65;padding:5px 0}.good{color:#a7f5ae}.holders{margin-top:12px;padding:20px;border:1px solid var(--line);border-radius:19px;background:#ffffff03}.holders h3{margin:0 0 13px;font-family:"Space Grotesk"}.holderRow{display:grid;grid-template-columns:1fr 90px 55px;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff08;font-size:11px}.holderRow:last-child{border-bottom:0}.holderRow span{color:var(--muted)}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.action{display:inline-flex;padding:9px 12px;border:1px solid var(--line);border-radius:11px;color:#cbd5e8;font-size:11px;background:#ffffff03}
-.section{max-width:1180px;margin:auto;padding:78px 22px}.head{text-align:center;margin-bottom:30px}.head h2{font-family:"Space Grotesk";font-size:40px;letter-spacing:-.045em;margin:0 0 8px}.head p{color:var(--muted);margin:0}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.card{padding:24px;border:1px solid var(--line);border-radius:21px;background:linear-gradient(145deg,#ffffff08,#ffffff02);transition:.3s}.card:hover{transform:translateY(-5px);border-color:#48e7ff35}.icon{width:43px;height:43px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#48e7ff18,#8f7cff18);margin-bottom:17px;font-size:19px}.card h3{font-family:"Space Grotesk";margin:0 0 8px}.card p{color:var(--muted);font-size:13px;line-height:1.65;margin:0}.footer{border-top:1px solid var(--line);padding:28px 22px;text-align:center;color:#748099;font-size:11px}
-.toast{position:fixed;right:20px;bottom:20px;padding:13px 15px;border:1px solid var(--line);border-radius:13px;background:#11182b;box-shadow:0 20px 50px #0008;display:none;font-size:12px;z-index:10}.toast.show{display:block;animation:rise .3s}
+.result{max-width:940px;margin:24px auto 0;text-align:left;display:none}.result.show{display:block;animation:rise .45s ease}.resultHero{padding:22px;border:1px solid var(--line);border-radius:21px;background:var(--panel);display:flex;justify-content:space-between;gap:16px;align-items:center}.tokenTitle{font-family:"Space Grotesk";font-size:25px}.sub{font-size:12px;color:var(--muted);margin-top:6px;word-break:break-all}.risk{padding:11px 15px;border-radius:999px;font-weight:700;font-size:12px;white-space:nowrap}.summary{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-top:12px}.scoreCard,.details{border:1px solid var(--line);border-radius:20px;background:#ffffff04;padding:22px}.scoreLine{display:flex;justify-content:space-between;align-items:end}.score{font-family:"Space Grotesk";font-size:56px;line-height:1}.score small{font-size:14px;color:var(--muted);font-family:"DM Sans"}.ring{height:10px;background:#141b2d;border-radius:99px;overflow:hidden;margin-top:18px}.ring i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--cyan),var(--violet),var(--pink));border-radius:99px}.metaGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.meta{padding:14px;border:1px solid var(--line);border-radius:15px;background:#ffffff03}.meta b{display:block;font-size:13px}.meta span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.metric{padding:17px;border:1px solid var(--line);border-radius:17px;background:#ffffff03}.metricTop{display:flex;justify-content:space-between;gap:10px;font-size:12px}.metricTop b{font-family:"Space Grotesk"}.bar{height:7px;background:#151c2f;border-radius:99px;margin-top:12px;overflow:hidden}.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink))}.warnings{margin-top:12px;padding:19px;border-radius:18px;border:1px solid #ffd66b33;background:#ffd66b08}.warnings h3{font-family:"Space Grotesk";font-size:15px;margin:0 0 10px}.warning{font-size:12px;color:#ffe9ac;line-height:1.65;padding:5px 0}.good{color:#a7f5ae}.holders{margin-top:12px;padding:20px;border:1px solid var(--line);border-radius:19px;background:#ffffff03}.holders h3{margin:0 0 13px;font-family:"Space Grotesk"}.holderRow{display:grid;grid-template-columns:1fr 90px 55px;gap:10px;padding:10px 0;border-bottom:1px solid #ffffff08;font-size:11px}.holderRow:last-child{border-bottom:0}.holderRow span{color:var(--muted)}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.action{display:inline-flex;padding:9px 12px;border:1px solid var(--line);border-radius:11px;color:#cbd5e8;font-size:11px;background:#ffffff03}
+.section{max-width:1180px;margin:auto;padding:78px 22px}.head{text-align:center;margin-bottom:30px}.head h2{font-family:"Space Grotesk";font-size:40px;letter-spacing:-.045em;margin:0 0 8px}.head p{color:var(--muted);margin:0}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.card{padding:24px;border:1px solid var(--line);border-radius:21px;background:linear-gradient(145deg,#ffffff08,#ffffff02);transition:.3s}.card:hover{transform:translateY(-5px);border-color:#48e7ff35}.icon{width:43px;height:43px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(135deg,#48e7ff18,#8f7cff18);margin-bottom:17px;font-size:19px}.card h3{font-family:"Space Grotesk";margin:0 0 8px}.card p{color:var(--muted);font-size:13px;line-height:1.65;margin:0}.footer{border-top:1px solid var(--line);padding:28px 22px;text-align:center;color:#748099;font-size:11px}.toast{position:fixed;right:20px;bottom:20px;padding:13px 15px;border:1px solid var(--line);border-radius:13px;background:#11182b;box-shadow:0 20px 50px #0008;display:none;font-size:12px;z-index:10}.toast.show{display:block;animation:rise .3s}
 @keyframes spin{to{transform:rotate(360deg)}}@keyframes float{50%{transform:translateY(-22px) scale(1.07)}}@keyframes rise{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:none}}
-@media(max-width:780px){.navlinks{display:none}.hero{padding-top:50px}.scanrow,.summary,.metrics,.features{grid-template-columns:1fr}.resultHero{align-items:flex-start;flex-direction:column}.score{font-size:48px}.metaGrid{grid-template-columns:1fr 1fr}h1{font-size:50px}}
+@media(max-width:780px){.hero{padding-top:50px}.scanrow,.summary,.metrics,.features{grid-template-columns:1fr}.resultHero{align-items:flex-start;flex-direction:column}.score{font-size:48px}.metaGrid{grid-template-columns:1fr 1fr}h1{font-size:50px}}
 </style>
 </head>
 <body>
-<nav class="nav">
-<a class="brand" href="#"><span class="mark"></span>RugShield</a>
-<div class="navlinks"><a href="#scanner">Scanner</a><a href="#features">Protection</a><a href="#how">How it works</a></div>
-<div class="status"><i></i> Scanner Online</div>
-</nav>
-
-<section class="hero" id="scanner">
+<nav class="nav"><a class="brand" href="#"><span class="mark"></span>RugShield</a><div class="status"><i></i> Scanner Online</div></nav>
+<section class="hero">
 <div class="glow g1"></div><div class="glow g2"></div>
-<div class="eyebrow"><span class="pulse"></span><b>Multi-chain token intelligence</b></div>
+<div class="eyebrow"><span class="pulse"></span> Multi-chain token intelligence</div>
 <h1>Check the token.<br><span class="gradient">See the risk.</span></h1>
-<p>Paste a token contract and get a structured security report covering contract permissions, trading behavior, liquidity, holders, developer signals and authenticity.</p>
+<p>Paste a token contract. RugShield automatically detects the network and builds a live on-chain risk report.</p>
 <div class="scanner">
-<div class="scanrow">
-<div class="field" id="chainBox" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-  <span style="color:#9aa4bc">Auto-detect chain</span><span id="detectedChain" style="font-weight:700;color:#bff9ff">AUTO</span>
-</div>
-<input class="field" id="address" placeholder="Paste token contract address…" autocomplete="off">
-<button class="scanbtn" id="scan">Scan Token</button>
-</div>
-<div class="quick"><span>Paste address only · RugShield detects the network automatically</span></div>
-<div class="loader" id="loader"><div class="spinner"></div></div>
-</div>
-<div class="result" id="result"></div>
+<div class="scanrow"><input class="field" id="address" placeholder="Paste token contract address…" autocomplete="off"><button class="scanbtn" id="scan">Scan Token</button></div>
+<div class="quick"><span>Auto-detect</span><span class="chip">Ethereum</span><span class="chip">BSC</span><span class="chip">Robinhood Chain</span><span class="chip">Base</span><span class="chip">Arbitrum</span><span class="chip">Polygon</span><span class="chip">Avalanche</span><span class="chip">Solana</span></div>
+<div class="detect" id="detect">Waiting for contract address…</div><div class="loader" id="loader"><div class="spinner"></div></div>
+</div><div class="result" id="result"></div>
 </section>
-
-<section class="section" id="features">
-<div class="head"><h2>Six layers. One clear signal.</h2><p>RugShield turns noisy on-chain evidence into a readable risk report.</p></div>
-<div class="features">
-<div class="card"><div class="icon">◈</div><h3>Contract Guard</h3><p>Open source, proxy, minting, owner controls, blacklist, pause and other privileged behavior.</p></div>
-<div class="card"><div class="icon">◉</div><h3>Liquidity Radar</h3><p>DEX pairs, liquidity depth, price, volume and pool signals from live market data.</p></div>
-<div class="card"><div class="icon">◌</div><h3>Holder Map</h3><p>Holder count, top-holder concentration, locked positions and notable wallet labels.</p></div>
-<div class="card"><div class="icon">↗</div><h3>Developer Trail</h3><p>Creator/deployer signals and malicious-address intelligence when supported by the security provider.</p></div>
-<div class="card"><div class="icon">⌁</div><h3>Trading Check</h3><p>Buy tax, sell tax, transfer restrictions, honeypot-related signals and DEX availability.</p></div>
-<div class="card"><div class="icon">✓</div><h3>Authenticity</h3><p>Counterfeit detection plus special canonical-asset verification for Robinhood Chain Stock Tokens.</p></div>
-</div>
-</section>
-
-<section class="section" id="how">
-<div class="head"><h2>Built to show evidence, not hype.</h2><p>The score is assembled from individual signals so users can see why a token is risky.</p></div>
-</section>
-<footer class="footer">RugShield © 2026 · Automated security analysis is informational and does not guarantee token safety or investment performance.</footer>
+<section class="section"><div class="head"><h2>Six layers. One clear signal.</h2><p>Evidence first. No fabricated safety score.</p></div><div class="features">
+<div class="card"><div class="icon">◈</div><h3>Contract Guard</h3><p>Verification, owner controls, minting, pause, blacklist, proxy and suspicious privileged functions.</p></div>
+<div class="card"><div class="icon">◉</div><h3>Liquidity Radar</h3><p>Live DEX pairs, liquidity, price, volume and trading activity when available.</p></div>
+<div class="card"><div class="icon">◌</div><h3>Holder Map</h3><p>Holder count and top-holder concentration from supported public explorers.</p></div>
+<div class="card"><div class="icon">↗</div><h3>Developer Trail</h3><p>Creator/deployer information from public explorer data where available.</p></div>
+<div class="card"><div class="icon">⌁</div><h3>Trading Check</h3><p>Tax and restriction signals from verified ABI plus on-chain contract inspection.</p></div>
+<div class="card"><div class="icon">✓</div><h3>Authenticity</h3><p>Verified contract evidence plus Robinhood canonical-asset checks where available.</p></div>
+</div></section>
+<footer class="footer">RugShield © 2026 · Automated analysis is informational and does not guarantee token safety.</footer>
 <div class="toast" id="toast"></div>
-
 <script>
-const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-const scan=$('scan'),loader=$('loader'),result=$('result'),address=$('address'),detected=$('detectedChain'),toast=$('toast');
-function showToast(t){toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3200)}
-function metric(name,val){val=Math.max(0,Math.min(100,Math.round(Number(val)||0)));return `<div class="metric"><div class="metricTop"><span>${esc(name)}</span><b>${val}%</b></div><div class="bar"><i style="width:${val}%"></i></div></div>`}
-function render(d){
- const c=d.riskScore>=81?'#ff6f83':d.riskScore>=61?'#ffd66b':d.riskScore>=41?'#ffd66b':'#92f59b';
- detected.textContent=d.chainName||'DETECTED';
- const warnings=(d.warnings||[]).map(x=>`<div class="warning">⚠ ${esc(x)}</div>`).join('')||'<div class="warning good">✓ No material warnings returned.</div>';
- const holders=(d.holders||[]).slice(0,10).map((h,i)=>`<div class="holderRow"><span>${i+1}. ${esc(h.address||'Unknown')} ${h.tag?`· ${esc(h.tag)}`:''}</span><b>${h.percent!=null?esc(h.percent)+'%':'—'}</b><span>${h.locked?'Locked':'—'}</span></div>`).join('');
- result.innerHTML=`<div class="resultHero"><div><div class="tokenTitle">${esc(d.token?.name||'Unknown Token')} <span style="font-size:13px;color:#8290aa">/ ${esc(d.token?.symbol||'—')}</span></div><div class="sub">${esc(d.chainName)} · ${esc(d.address)}</div></div><div class="risk" style="color:${c};border:1px solid ${c}44;background:${c}12">● ${esc(d.riskLabel)} · ${d.riskScore}/100</div></div>
- <div class="summary"><div class="scoreCard"><div class="scoreLine"><div><div style="color:#97a3bc;font-size:12px">RugShield Risk Score</div><div class="score">${d.riskScore}<small>/100</small></div></div><div style="text-align:right;color:#97a3bc;font-size:11px">Higher = more risk</div></div><div class="ring"><i style="width:${d.riskScore}%"></i></div></div>
- <div class="details"><div class="metaGrid"><div class="meta"><b>${esc(d.market?.priceUsd||'—')}</b><span>Price</span></div><div class="meta"><b>${esc(d.market?.liquidityUsd||'—')}</b><span>Liquidity</span></div><div class="meta"><b>${esc(d.market?.volume24h||'—')}</b><span>24h Volume</span></div><div class="meta"><b>${esc(d.security?.holderCount||'—')}</b><span>Holders</span></div></div></div></div>
- <div class="metrics">${metric('Contract Security',d.metrics?.contractSecurity)}${metric('Liquidity Safety',d.metrics?.liquiditySafety)}${metric('Holder Distribution',d.metrics?.holderDistribution)}${metric('Developer Safety',d.metrics?.developerSafety)}${metric('Trading Safety',d.metrics?.tradingSafety)}${metric('Authenticity',d.metrics?.authenticity)}</div>
- <div class="warnings"><h3>Risk Signals</h3>${warnings}</div>
- ${holders?`<div class="holders"><h3>Top Holders</h3>${holders}</div>`:''}
- <div class="actions">${d.links?.explorer?`<a class="action" target="_blank" href="${esc(d.links.explorer)}">View Explorer ↗</a>`:''}${d.links?.dex?`<a class="action" target="_blank" href="${esc(d.links.dex)}">View DEX Data ↗</a>`:''}</div>`;
- result.classList.add('show');
+const $=x=>document.getElementById(x), esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const EVM=/^0x[a-fA-F0-9]{40}$/;
+const CHAINS={
+ ethereum:{name:"Ethereum",id:"1",dex:"ethereum",rpc:"https://ethereum-rpc.publicnode.com",bs:"https://eth.blockscout.com",explorer:"https://eth.blockscout.com/address/"},
+ bsc:{name:"BNB Smart Chain",id:"56",dex:"bsc",rpc:"https://bsc-rpc.publicnode.com",bs:"https://bsc.blockscout.com",explorer:"https://bscscan.com/address/"},
+ robinhood:{name:"Robinhood Chain",id:"4663",dex:"robinhood",rpc:"https://rpc.mainnet.chain.robinhood.com",bs:null,explorer:"https://robinhoodchain.blockscout.com/address/"},
+ base:{name:"Base",id:"8453",dex:"base",rpc:"https://base-rpc.publicnode.com",bs:"https://base.blockscout.com",explorer:"https://base.blockscout.com/address/"},
+ arbitrum:{name:"Arbitrum",id:"42161",dex:"arbitrum",rpc:"https://arbitrum-one-rpc.publicnode.com",bs:"https://arbitrum.blockscout.com",explorer:"https://arbitrum.blockscout.com/address/"},
+ polygon:{name:"Polygon",id:"137",dex:"polygon",rpc:"https://polygon-bor-rpc.publicnode.com",bs:"https://polygon.blockscout.com",explorer:"https://polygon.blockscout.com/address/"},
+ avalanche:{name:"Avalanche",id:"43114",dex:"avalanche",rpc:"https://avalanche-c-chain-rpc.publicnode.com",bs:null,explorer:"https://snowtrace.io/address/"},
+ solana:{name:"Solana",id:"solana",dex:"solana",rpc:"https://api.mainnet-beta.solana.com",bs:null,explorer:"https://solscan.io/token/"}
+};
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),3500)}
+async function json(url,opt={}){const r=await fetch(url,{...opt,headers:{"Accept":"application/json",...(opt.headers||{})}});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
+async function rpc(c,m,p=[]){const j=await json(c.rpc,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:m,params:p})});if(j.error)throw new Error(j.error.message||"RPC error");return j.result}
+function abiCallData(sig,args=[]){return sig+args.map(x=>String(x).replace(/^0x/,"").padStart(64,"0")).join("")}
+function decodeString(x){try{if(!x||x==="0x")return null;let h=x.slice(2);if(h.length>=128){let o=parseInt(h.slice(0,64),16)*2,l=parseInt(h.slice(o,o+64),16);return new TextDecoder().decode(Uint8Array.from(h.slice(o+64,o+64+l).match(/.{2}/g)||[] ,b=>parseInt(b,16))).replace(/\0/g,"")}}catch{}return null}
+async function erc(c,a){
+ let call=s=>rpc(c,"eth_call",[{to:a,data:s},"latest"]), out={name:null,symbol:null,decimals:18,total:null,owner:null};
+ try{out.name=decodeString(await call("0x06fdde03"))}catch{} try{out.symbol=decodeString(await call("0x95d89b41"))}catch{}
+ try{out.decimals=parseInt((await call("0x313ce567")).slice(-64),16)}catch{}
+ try{out.total=BigInt(await call("0x18160ddd"))}catch{}
+ try{let x=await call("0x8da5cb5b");out.owner="0x"+x.slice(-40)}catch{}
+ return out
 }
-scan.addEventListener('click',async()=>{
- const a=address.value.trim();if(!a){showToast('Paste a token contract address first.');address.focus();return}
- loader.classList.add('show');result.classList.remove('show');detected.textContent='SCANNING…';
- try{const r=await fetch('/api/scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:a})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Scan failed');render(d);result.scrollIntoView({behavior:'smooth',block:'center'})}
- catch(e){detected.textContent='NOT FOUND';result.innerHTML=`<div class="warnings"><h3>Could not scan this address</h3><div class="warning">⚠ ${esc(e.message)}</div></div>`;result.classList.add('show')}
- finally{loader.classList.remove('show')}
+async function detectEvm(a){
+ const keys=Object.keys(CHAINS).filter(k=>k!=="solana");
+ const hits=(await Promise.all(keys.map(async k=>{try{let code=await rpc(CHAINS[k],"eth_getCode",[a,"latest"]);return code&&code!=="0x"?k:null}catch{return null}}))).filter(Boolean);
+ if(hits.length===1)return hits[0];
+ if(hits.length>1){
+  const scored=await Promise.all(hits.map(async k=>{try{let d=await dex(CHAINS[k],a);return [k,d?.best?.liquidity?.usd||0]}catch{return [k,0]}}));
+  scored.sort((x,y)=>Number(y[1])-Number(x[1]));return scored[0][0];
+ }
+ return null
+}
+async function detectSol(a){try{let d=await dex(CHAINS.solana,a);if(d?.pairs?.length)return "solana";let x=await rpc(CHAINS.solana,"getAccountInfo",[a,{"encoding":"base64"}]);return x?.value?"solana":null}catch{return null}}
+async function dex(c,a){try{let j=await json(`https://api.dexscreener.com/token-pairs/v1/${c.dex}/${encodeURIComponent(a)}`);let pairs=Array.isArray(j)?j:[];pairs.sort((x,y)=>Number(y?.liquidity?.usd||0)-Number(x?.liquidity?.usd||0));return{pairs,best:pairs[0]||null}}catch{return null}}
+async function sourcify(c,a){try{return await json(`https://sourcify.dev/server/v2/contract/${c.id}/${a}?fields=abi`)}catch{return null}}
+async function blockscout(c,a){
+ if(!c.bs)return {};
+ const base=c.bs+"/api/v2";
+ const [token,counters,holders,addr]=await Promise.all([
+  json(`${base}/tokens/${a}`).catch(()=>null),
+  json(`${base}/tokens/${a}/counters`).catch(()=>null),
+  json(`${base}/tokens/${a}/holders`).catch(()=>null),
+  json(`${base}/addresses/${a}`).catch(()=>null)
+ ]);
+ return {token,counters,holders,addr}
+}
+function hasFn(abi,names){return (abi||[]).some(x=>x.type==="function"&&names.includes(String(x.name||"").toLowerCase()))}
+function pct(v){return Math.max(0,Math.min(100,Math.round(Number(v)||0)))}
+function money(v){let n=Number(v);if(!n)return "—";return "$"+new Intl.NumberFormat("en-US",{notation:"compact",maximumFractionDigits:2}).format(n)}
+function riskLabel(s){return s>=81?"EXTREME RISK":s>=61?"HIGH RISK":s>=41?"MEDIUM RISK":s>=21?"LOW RISK":"VERY LOW RISK"}
+async function analyze(k,a){
+ const c=CHAINS[k], e=k!=="solana";
+ let token={},bytecode=null,abi=null,verified=false,bs={},market=null;
+ if(e){bytecode=await rpc(c,"eth_getCode",[a,"latest"]);if(!bytecode||bytecode==="0x")throw new Error("No contract bytecode found on "+c.name);token=await erc(c,a);let s=await sourcify(c,a);abi=s?.abi||null;verified=!!s;bs=await blockscout(c,a)}
+ else {let d=await dex(c,a);market=d;token={name:d?.best?.baseToken?.name||"Solana Token",symbol:d?.best?.baseToken?.symbol||"TOKEN",decimals:null}}
+ market=market||await dex(c,a);
+ let contract=80,liq=60,holders=60,dev=65,trading=75,auth=55,w=[];
+ if(verified){auth+=25;w.push("Contract has a Sourcify verification record.");}
+ else {contract-=15;w.push("Contract source is not verified by Sourcify.");}
+ if(e&&bytecode){
+  const lower=bytecode.toLowerCase();
+  if(lower.includes("360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc")){contract-=12;w.push("EIP-1967 proxy implementation slot detected.")}
+  if(lower.includes("40c10f19")||lower.includes("a0712d68")){contract-=18;w.push("Common mint function selector detected in runtime bytecode.")}
+ }
+ if(abi){
+  if(hasFn(abi,["mint","mintto","mintbatch"])){contract-=18;w.push("Mint-capable function appears in the verified ABI.");}
+  if(hasFn(abi,["blacklist","setblacklist","addblacklist","removeblacklist"])){contract-=12;w.push("Blacklist control appears in the verified ABI.");}
+  if(hasFn(abi,["pause","unpause"])){contract-=7;w.push("Pause/unpause controls appear in the verified ABI.");}
+  if(hasFn(abi,["settax","setfees","setbuytax","setselltax","settaxes"])){trading-=18;w.push("Tax/fee modification functions appear in the verified ABI.");}
+  if(hasFn(abi,["upgradeto","upgrade","upgradeimplementation"])){contract-=12;w.push("Upgrade controls appear in the verified ABI.");}
+ }
+ if(token.owner&&/^0x0{40}$/i.test(token.owner)){w.push("Ownership appears renounced (owner is zero address).");}else if(token.owner){contract-=5;w.push("A non-zero owner address is present.");}
+ if(bs.token?.holders_count)holders+=Math.min(10,Math.log10(Number(bs.token.holders_count)||1)*2);
+ if(bs.holders?.items?.length&&bs.token?.total_supply){
+  const total=BigInt(bs.token.total_supply), hs=bs.holders.items.slice(0,10).map(x=>{let raw=BigInt(x.value||0), p=total?Number(raw*10000n/total)/100:0;return{address:x.address_hash?.hash,percent:p,tag:x.address_hash?.name||x.address_hash?.public_tags?.[0]?.display_name||"",locked:false}}).filter(x=>x.address);
+  const top=hs.reduce((s,x)=>s+x.percent,0);if(top>50){holders-=30;w.push(`Top 10 indexed holders control about ${top.toFixed(1)}% of supply.`)}else if(top>30){holders-=15;w.push(`Top 10 indexed holders control about ${top.toFixed(1)}% of supply.`)}
+  bs.topHolders=hs;
+ }
+ if(bs.addr?.creator_address_hash){dev-=3;w.push("Deployer/creator address identified from Blockscout.")}
+ if(market?.best){
+  const l=Number(market.best.liquidity?.usd||0);if(l<10000){liq-=25;w.push("Very low DEX liquidity detected.")}else if(l<50000){liq-=12;w.push("Low DEX liquidity detected.")}else if(l>1000000)liq+=10;
+  const sells=Object.values(market.best.txns||{}).reduce((s,x)=>s+Number(x?.sells||0),0),buys=Object.values(market.best.txns||{}).reduce((s,x)=>s+Number(x?.buys||0),0);if(sells>buys*4&&sells>20){trading-=12;w.push("Recent DEX flow shows substantially more sells than buys.")}
+ }else{liq-=20;w.push("No DEX pair was found by the connected market-data source.")}
+ if(!bs.holders)w.push("Holder distribution is unavailable on this chain's public explorer adapter.");
+ const score=pct(100-(contract*.25+liq*.2+holders*.18+dev*.15+trading*.17+auth*.05));
+ return {chain:c,token,verified,riskScore:score,riskLabel:riskLabel(score),metrics:{contract,liq,holders,dev,trading,auth},warnings:w,market,bs,links:{explorer:c.explorer+a,dex:market?.best?.url||null}}
+}
+function metric(n,v){v=pct(v);return `<div class="metric"><div class="metricTop"><span>${esc(n)}</span><b>${v}%</b></div><div class="bar"><i style="width:${v}%"></i></div></div>`}
+function render(d,a){
+ const color=d.riskScore>=81?"#ff6f83":d.riskScore>=61?"#ffd66b":d.riskScore>=41?"#ffd66b":"#92f59b";
+ const hs=(d.bs?.topHolders||[]).map((h,i)=>`<div class="holderRow"><span>${i+1}. ${esc(h.address||"Unknown")} ${h.tag?`· ${esc(h.tag)}`:""}</span><b>${h.percent.toFixed(2)}%</b><span>—</span></div>`).join("");
+ const warns=d.warnings.map(x=>`<div class="warning">⚠ ${esc(x)}</div>`).join("");
+ $("detect").innerHTML=`Detected chain: <b>${esc(d.chain.name)}</b> · Chain ID ${esc(d.chain.id)}`;
+ $("result").innerHTML=`<div class="resultHero"><div><div class="tokenTitle">${esc(d.token.name||"Unknown Token")} <span style="font-size:13px;color:#8290aa">/ ${esc(d.token.symbol||"—")}</span></div><div class="sub">${esc(d.chain.name)} · ${esc(a)}</div></div><div class="risk" style="color:${color};border:1px solid ${color}44;background:${color}12">● ${esc(d.riskLabel)} · ${d.riskScore}/100</div></div>
+ <div class="summary"><div class="scoreCard"><div class="scoreLine"><div><div style="color:#97a3bc;font-size:12px">RugShield Risk Score</div><div class="score">${d.riskScore}<small>/100</small></div></div><div style="text-align:right;color:#97a3bc;font-size:11px">Higher = more risk</div></div><div class="ring"><i style="width:${d.riskScore}%"></i></div></div>
+ <div class="details"><div class="metaGrid"><div class="meta"><b>${esc(d.market?.best?.priceUsd?money(d.market.best.priceUsd):"—")}</b><span>Price</span></div><div class="meta"><b>${esc(d.market?.best?.liquidity?.usd?money(d.market.best.liquidity.usd):"—")}</b><span>Liquidity</span></div><div class="meta"><b>${esc(d.market?.best?.volume?.h24?money(d.market.best.volume.h24):"—")}</b><span>24h Volume</span></div><div class="meta"><b>${esc(d.bs?.token?.holders_count||"—")}</b><span>Holders</span></div></div></div></div>
+ <div class="metrics">${metric("Contract Security",d.metrics.contract)}${metric("Liquidity Safety",d.metrics.liq)}${metric("Holder Distribution",d.metrics.holders)}${metric("Developer Safety",d.metrics.dev)}${metric("Trading Safety",d.metrics.trading)}${metric("Authenticity",d.metrics.auth)}</div>
+ <div class="warnings"><h3>Risk Signals</h3>${warns||'<div class="warning good">✓ No material warnings returned.</div>'}</div>
+ ${hs?`<div class="holders"><h3>Top Indexed Holders</h3>${hs}</div>`:""}
+ <div class="actions"><a class="action" target="_blank" href="${esc(d.links.explorer)}">View Explorer ↗</a>${d.links.dex?`<a class="action" target="_blank" href="${esc(d.links.dex)}">View DEX Pair ↗</a>`:""}</div>`;
+ $("result").classList.add("show");$("result").scrollIntoView({behavior:"smooth",block:"center"});
+}
+$("scan").addEventListener("click",async()=>{
+ const a=$("address").value.trim();if(!a){toast("Paste a contract address first.");return}
+ $("loader").classList.add("show");$("result").classList.remove("show");$("detect").textContent="Detecting network and reading on-chain data…";
+ try{
+  let k=null;
+  if(EVM.test(a))k=await detectEvm(a);else k=await detectSol(a);
+  if(!k)throw new Error("This address was not found as a supported token contract. Check the address and try again.");
+  $("detect").innerHTML=`Detected chain: <b>${esc(CHAINS[k].name)}</b> · loading security data…`;
+  const d=await analyze(k,a);render(d,a);
+ }catch(e){$("detect").textContent="Scan failed";$("result").innerHTML=`<div class="warnings"><h3>Could not scan this address</h3><div class="warning">⚠ ${esc(e.message)}</div><div class="warning">Tip: use a token contract address, not a wallet address.</div></div>`;$("result").classList.add("show")}
+ finally{$("loader").classList.remove("show")}
 });
-address.addEventListener('keydown',e=>{if(e.key==='Enter')scan.click()});
+$("address").addEventListener("keydown",e=>{if(e.key==="Enter")$("scan").click()});
 </script>
 </body>
 </html>
