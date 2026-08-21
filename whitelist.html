@@ -10,8 +10,8 @@
   <a class="brand" href="index.html"><span class="pixel-brand">THE LAST 404</span><img src="the-last-404-logo.png" alt="THE LAST 404 logo"></a>
   <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menu">MENU</button>
   <nav id="menu" aria-hidden="true">
-    <a href="index.html#story">WHY 404?</a><a href="index.html#archive">THE 404 FILES</a>
-    <a href="index.html#missions">MISSIONS</a><a href="whitelist.html">WHITELIST</a>
+    <a href="index.html">HOME</a>
+    <a class="checker-link" href="javascript:void(0)" aria-disabled="true">WHITELIST CHECKER <small>COMING SOON</small></a>
   </nav>
 </header>
 <main>
@@ -21,8 +21,8 @@
 <h1>REQUEST <em>ACCESS.</em></h1>
 <p class="muted">Complete the two archive missions, then submit your X username and EVM wallet address.</p>
 <div class="mission-list page-missions">
-<a class="mission" href="https://x.com/" target="_blank" rel="noopener"><b>01</b><span><strong>FOLLOW</strong><small>Follow THE LAST 404 on X / Twitter.</small></span><i>↗</i></a>
-<a class="mission" href="https://x.com/" target="_blank" rel="noopener"><b>02</b><span><strong>RETWEET</strong><small>Retweet the official THE LAST 404 post.</small></span><i>↗</i></a>
+<a class="mission" href="https://x.com/TLast404/status/2090774459393458635" target="_blank" rel="noopener"><b>01</b><span><strong>FOLLOW</strong><small>Follow THE LAST 404 on X / Twitter.</small></span><i>↗</i></a>
+<a class="mission" href="https://x.com/TLast404/status/2090774459393458635" target="_blank" rel="noopener"><b>02</b><span><strong>RETWEET</strong><small>Retweet the official THE LAST 404 post.</small></span><i>↗</i></a>
 </div>
 <form id="wlForm">
 <label>X / TWITTER USERNAME<input id="xUsername" required maxlength="80" placeholder="@username" autocomplete="off"></label>
@@ -32,6 +32,9 @@
 <div class="success" id="success" hidden aria-live="polite"><strong>✓ WHITELIST REQUEST RECEIVED</strong><span id="redirectText">Redirecting to the archive in 3 seconds...</span></div>
 </div>
 </section>
+
+<div class="pixel-particles" aria-hidden="true"></div>
+<div class="click-flash" id="clickFlash" aria-hidden="true"></div>
 </main>
 <footer><span>THE LAST 404</span><span>LOST IN TIME. MINTED FOREVER.</span><span>© 2026</span></footer>
 <script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -60,4 +63,12 @@ form.hidden=true;success.hidden=false;
 let s=3;const t=setInterval(()=>{s--;if(s>0)rt.textContent="Redirecting to the archive in "+s+" seconds...";else{clearInterval(t);location.href="index.html"}},1000);
 });
 </script>
-</body></html>
+<script>
+document.addEventListener("click",function(e){
+  const f=document.getElementById("clickFlash"); if(!f)return;
+  f.style.setProperty("--x",e.clientX+"px"); f.style.setProperty("--y",e.clientY+"px");
+  f.classList.remove("flash"); void f.offsetWidth; f.classList.add("flash");
+});
+</script><script>
+document.querySelector('.checker-link')?.addEventListener('click', e=>e.preventDefault());
+</script></body></html>
