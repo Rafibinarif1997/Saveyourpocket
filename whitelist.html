@@ -34,145 +34,115 @@
 <div class="click-flash" id="clickFlash" aria-hidden="true"></div>
 </main>
 <footer><span>THE LAST 404</span><span>LOST IN TIME. MINTED FOREVER.</span><span>© 2026</span></footer>
-<script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-const C = window.LAST404_CONFIG || {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
-};
+const SUPABASE_URL = "https://dmabnckfrvhiourqsxwz.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtYWJuY2tmcnZoaW91cnFzeHd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzQ5NjYsImV4cCI6MjEwMjg1MDk2Nn0.a_4e1l-sVpSQB8_N6yQM1luePI--BinryDQ2vSJ5jeg";
 
 const form = document.getElementById("wlForm");
 const success = document.getElementById("success");
 const rt = document.getElementById("redirectText");
 
-function showError(message) {
-  let box = document.getElementById("wlError");
-  if (!box) {
-    box = document.createElement("div");
-    box.id = "wlError";
-    box.setAttribute("role", "alert");
-    box.style.cssText =
-      "margin-top:18px;padding:16px;border:1px solid #7d2d2d;background:#160708;color:#ffb5b5;font:700 12px/1.6 Arial,sans-serif;";
-    form.parentNode.insertBefore(box, form.nextSibling);
+function errorBox(message){
+  let box=document.getElementById("wlError");
+  if(!box){
+    box=document.createElement("div");
+    box.id="wlError";
+    box.style.cssText="margin-top:18px;padding:16px;border:1px solid #7d2d2d;background:#160708;color:#ffb5b5;font:700 12px/1.6 Arial,sans-serif;";
+    form.parentNode.insertBefore(box,form.nextSibling);
   }
-  box.textContent = message;
-  box.scrollIntoView({behavior:"smooth", block:"center"});
+  box.textContent=message;
 }
 
-function clearError() {
-  const box = document.getElementById("wlError");
-  if (box) box.remove();
-}
-
-function validWallet(v) {
-  return /^0x[a-fA-F0-9]{40}$/.test(v);
-}
-
-form.addEventListener("submit", async function(e) {
+form.addEventListener("submit", async function(e){
   e.preventDefault();
-  clearError();
+  e.stopPropagation();
 
-  const x = document.getElementById("xUsername").value.trim().replace(/^@/, "");
-  const wallet = document.getElementById("wallet").value.trim();
-  const btn = form.querySelector('button[type="submit"]');
+  const x=document.getElementById("xUsername").value.trim().replace(/^@/,"");
+  const wallet=document.getElementById("wallet").value.trim();
+  const btn=form.querySelector('button[type="submit"]');
 
-  if (!x) {
-    showError("Please enter your X / Twitter username.");
+  if(!x){ errorBox("Please enter your X / Twitter username."); return; }
+  if(!/^0x[a-fA-F0-9]{40}$/.test(wallet)){
+    errorBox("Invalid EVM wallet address. Please enter a valid 0x... address.");
     return;
   }
 
-  if (!validWallet(wallet)) {
-    showError("Invalid EVM wallet address. Please paste a valid 0x... address.");
-    return;
-  }
+  btn.disabled=true;
+  btn.textContent="SUBMITTING...";
+  errorBox("Connecting to the archive...");
 
-  if (!C.SUPABASE_URL || !C.SUPABASE_ANON_KEY) {
-    showError("Whitelist database configuration is missing.");
-    console.error("LAST404 Supabase config missing:", C);
-    return;
-  }
+  try{
+    const response=await fetch(SUPABASE_URL+"/rest/v1/whitelist_entries",{
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+SUPABASE_KEY,
+        "Content-Type":"application/json",
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify({
+        x_username:x,
+        wallet_address:wallet
+      })
+    });
 
-  if (!window.supabase) {
-    showError("Supabase library did not load. Please refresh and try again.");
-    console.error("LAST404 Supabase JS library missing.");
-    return;
-  }
+    if(!response.ok){
+      const text=await response.text();
+      let message=text;
+      try{
+        const j=JSON.parse(text);
+        message=j.message || j.error || j.hint || text;
+      }catch(_){}
 
-  btn.disabled = true;
-  btn.textContent = "SUBMITTING...";
-
-  try {
-    const client = window.supabase.createClient(
-      C.SUPABASE_URL,
-      C.SUPABASE_ANON_KEY
-    );
-
-    const { error } = await client
-      .from("whitelist_entries")
-      .insert({
-        x_username: x,
-        wallet_address: wallet
-      });
-
-    if (error) {
-      console.error("LAST404 Supabase insert error:", error);
-
-      if (error.code === "23505") {
-        showError("This wallet address is already on the whitelist.");
-      } else if (error.code === "42501") {
-        showError("Whitelist permission error. The database is rejecting public submissions.");
-      } else {
-        showError(
-          "Submission failed: " +
-          (error.message || error.code || "Unknown Supabase error")
-        );
+      if(response.status===409){
+        errorBox("This wallet address is already on the whitelist.");
+      }else if(response.status===401 || response.status===403){
+        errorBox("Supabase rejected the submission (permission/RLS).");
+      }else{
+        errorBox("Submission failed: "+message);
       }
 
-      btn.disabled = false;
-      btn.textContent = "JOIN WHITELIST";
+      btn.disabled=false;
+      btn.textContent="JOIN WHITELIST";
       return;
     }
 
-    // Successful database insert.
-    form.style.display = "none";
-    success.hidden = false;
-    success.style.display = "block";
+    // Real successful insert.
+    form.style.display="none";
+    const err=document.getElementById("wlError");
+    if(err) err.remove();
 
-    let seconds = 3;
-    rt.textContent = "Redirecting to the archive in 3 seconds...";
+    success.hidden=false;
+    success.style.display="block";
 
-    const timer = setInterval(function() {
+    let seconds=3;
+    rt.textContent="Redirecting to the archive in 3 seconds...";
+
+    const timer=setInterval(()=>{
       seconds--;
-
-      if (seconds > 0) {
-        rt.textContent =
-          "Redirecting to the archive in " + seconds + " seconds...";
-      } else {
+      if(seconds>0){
+        rt.textContent="Redirecting to the archive in "+seconds+" seconds...";
+      }else{
         clearInterval(timer);
         window.location.replace("./index.html");
       }
-    }, 1000);
+    },1000);
 
-  } catch (err) {
-    console.error("LAST404 whitelist exception:", err);
-    showError(
-      "Connection error: " +
-      (err && err.message ? err.message : "Unable to contact Supabase.")
-    );
-    btn.disabled = false;
-    btn.textContent = "JOIN WHITELIST";
+  }catch(err){
+    console.error(err);
+    errorBox("Connection failed: "+(err.message || "Please check your internet connection."));
+    btn.disabled=false;
+    btn.textContent="JOIN WHITELIST";
   }
 });
 </script>
 
 <script>
-document.addEventListener("click", function(e) {
-  const f = document.getElementById("clickFlash");
-  if (!f) return;
-  f.style.setProperty("--x", e.clientX + "px");
-  f.style.setProperty("--y", e.clientY + "px");
+document.addEventListener("click",function(e){
+  const f=document.getElementById("clickFlash");
+  if(!f)return;
+  f.style.setProperty("--x",e.clientX+"px");
+  f.style.setProperty("--y",e.clientY+"px");
   f.classList.remove("flash");
   void f.offsetWidth;
   f.classList.add("flash");
@@ -180,27 +150,17 @@ document.addEventListener("click", function(e) {
 </script>
 
 <script>
-(function() {
-  const tasks = document.querySelectorAll(".mission");
-  if (!tasks.length) return;
-
-  const keys = [
-    "last404_follow_completed",
-    "last404_retweet_completed"
-  ];
-
-  tasks.forEach(function(task, i) {
-    if (localStorage.getItem(keys[i]) === "1") {
-      task.classList.add("follow-complete");
-    }
-
-    task.addEventListener("click", function() {
-      localStorage.setItem(keys[i], "1");
+(function(){
+  const tasks=document.querySelectorAll(".mission");
+  const keys=["last404_follow_completed","last404_retweet_completed"];
+  tasks.forEach((task,i)=>{
+    if(localStorage.getItem(keys[i])==="1") task.classList.add("follow-complete");
+    task.addEventListener("click",()=> {
+      localStorage.setItem(keys[i],"1");
       task.classList.add("follow-complete");
     });
   });
 })();
 </script>
-
 </body>
 </html>
