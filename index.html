@@ -7,7 +7,7 @@
 <meta name="description" content="THE LAST 404 — 404 unique NFTs inspired by forgotten objects and lost memories.">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="pixel-site">
 <header class="topbar">
   <a class="brand" href="#home" aria-label="THE LAST 404 home">
     <span class="pixel-brand">THE LAST 404</span>
@@ -18,7 +18,7 @@
     <a href="#story">WHY 404?</a>
     <a href="#archive">THE 404 FILES</a>
     <a href="#missions">MISSIONS</a>
-    <a href="whitelist.html">WHITELIST</a>
+    <a href="https://x.com/tlast404tlast404" target="_blank" rel="noopener">TWITTER ↗</a>
   </nav>
 </header>
 
@@ -70,24 +70,14 @@
   <p class="reveal-note">OTHER ARCHIVE ENTRIES WILL BE REVEALED LATER.</p>
 </section>
 
-<section id="missions" class="section missions">
-  <div class="eyebrow">03 / MISSIONS</div>
-  <h2>HELP US <em>FIND<br>THE MISSING.</em></h2>
-  <div class="mission-list">
-    <a class="mission" href="https://x.com/" target="_blank" rel="noopener">
-      <b>01</b><span><strong>FOLLOW</strong><small>Follow THE LAST 404 on X / Twitter.</small></span><i>↗</i>
-    </a>
-    <a class="mission" href="https://x.com/" target="_blank" rel="noopener">
-      <b>02</b><span><strong>RETWEET</strong><small>Retweet the official THE LAST 404 post.</small></span><i>↗</i>
-    </a>
-  </div>
-</section>
-
 <section class="section twitter">
   <div class="eyebrow">05 / X / TWITTER</div>
   <h2>FOLLOW <em>THE LAST 404.</em></h2>
-  <a class="btn gold" href="https://x.com/" target="_blank" rel="noopener">OPEN X / TWITTER ↗</a>
+  <a class="btn gold" href="https://x.com/tlast404" target="_blank" rel="noopener">OPEN X / TWITTER ↗</a>
 </section>
+
+<div class="pixel-particles" aria-hidden="true"></div>
+<div class="click-flash" id="clickFlash" aria-hidden="true"></div>
 </main>
 
 <footer>
@@ -99,5 +89,11 @@
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
-</body>
+<script>
+document.addEventListener("click",function(e){
+  const f=document.getElementById("clickFlash"); if(!f)return;
+  f.style.setProperty("--x",e.clientX+"px"); f.style.setProperty("--y",e.clientY+"px");
+  f.classList.remove("flash"); void f.offsetWidth; f.classList.add("flash");
+});
+</script></body>
 </html>
