@@ -90,6 +90,20 @@
 
 <div class="pixel-particles" aria-hidden="true"></div>
 <div class="click-flash" id="clickFlash" aria-hidden="true"></div>
+
+<div id="nftModal" class="nft-modal" aria-hidden="true">
+  <div class="nft-modal-backdrop" id="nftBackdrop"></div>
+  <div class="nft-modal-card" role="dialog" aria-modal="true" aria-labelledby="nftModalTitle">
+    <button type="button" class="nft-modal-close" id="nftModalClose" aria-label="Close">×</button>
+    <img id="nftModalImage" src="" alt="">
+    <div class="nft-modal-content">
+      <div class="eyebrow" id="nftModalNumber">THE 404 FILE</div>
+      <h3 id="nftModalTitle">ARCHIVE ENTRY</h3>
+      <p id="nftModalStory"></p>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <footer>
@@ -108,53 +122,58 @@ document.addEventListener("click",function(e){
   f.classList.remove("flash"); void f.offsetWidth; f.classList.add("flash");
 });
 </script>
+
+
 <script>
-const nftStories = ['Once, every kitchen had one.\nA little box holding five simple spices—\nand the smell of home.\nForgotten in the age of convenience.\nPreserved in the archive.', 'Once, the world gathered around its voice.\nNews, music, stories—\nall carried through the static.\nThen the world found newer voices.\nThe radio was left behind.', 'When the lights went out, it was always there.\nA small flame in the darkness—\nkeeping homes, roads, and memories alive.\nThen electricity made it unnecessary.\nThe lantern was forgotten.', 'Once, people waited for the sound of a letter arriving.\nMessages crossed towns, carried by hand—\nholding words meant for someone far away.\nThen the world learned to send messages instantly.\nThe post box was left behind.', 'Before refrigerators, there was the ice box.\nSimple, quiet, and always waiting for the next block of ice.\nThen cold became automatic.\nThe ice box became a memory.', 'Before numbers ruled the harvest, grain was measured by hand.\nA simple wooden box passed from one pair of hands to another—\nmeasuring food, trade, and the rhythm of everyday life.\nThen scales replaced it.\nThe little box became a forgotten measure of another time.'];
-const nftImages = [
-  "archive-01.png","archive-02.png","archive-03.png",
-  "archive-04.png","archive-05.png","archive-06.png"
-];
+(function() {
+  const stories = ['Once, every kitchen had one.\nA little box holding five simple spices—\nand the smell of home.\nForgotten in the age of convenience.\nPreserved in the archive.', 'Once, the world gathered around its voice.\nNews, music, stories—\nall carried through the static.\nThen the world found newer voices.\nThe radio was left behind.', 'When the lights went out, it was always there.\nA small flame in the darkness—\nkeeping homes, roads, and memories alive.\nThen electricity made it unnecessary.\nThe lantern was forgotten.', 'Once, people waited for the sound of a letter arriving.\nMessages crossed towns, carried by hand—\nholding words meant for someone far away.\nThen the world learned to send messages instantly.\nThe post box was left behind.', 'Before refrigerators, there was the ice box.\nSimple, quiet, and always waiting for the next block of ice.\nThen cold became automatic.\nThe ice box became a memory.', 'Before numbers ruled the harvest, grain was measured by hand.\nA simple wooden box passed from one pair of hands to another—\nmeasuring food, trade, and the rhythm of everyday life.\nThen scales replaced it.\nThe little box became a forgotten measure of another time.'];
+  const images = ["archive-01.png","archive-02.png","archive-03.png","archive-04.png","archive-05.png","archive-06.png"];
+  const modal = document.getElementById("nftModal");
+  const modalImage = document.getElementById("nftModalImage");
+  const modalNumber = document.getElementById("nftModalNumber");
+  const modalTitle = document.getElementById("nftModalTitle");
+  const modalStory = document.getElementById("nftModalStory");
+  const closeBtn = document.getElementById("nftModalClose");
+  const backdrop = document.getElementById("nftBackdrop");
 
-const nftModal = document.getElementById("nftModal");
-const nftModalImage = document.getElementById("nftModalImage");
-const nftModalTitle = document.getElementById("nftModalTitle");
-const nftModalNumber = document.getElementById("nftModalNumber");
-const nftModalStory = document.getElementById("nftModalStory");
-const nftModalClose = document.getElementById("nftModalClose");
+  function openStory(i) {
+    if (!modal) return;
+    modalImage.src = images[i];
+    modalImage.alt = "THE LAST 404 NFT #" + String(i + 1).padStart(3, "0");
+    modalNumber.textContent = "THE 404 FILE / #" + String(i + 1).padStart(3, "0");
+    modalTitle.textContent = "ARCHIVE ENTRY #" + String(i + 1).padStart(3, "0");
+    modalStory.textContent = stories[i];
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  }
 
-function openNFTStory(i) {
-  nftModalImage.src = nftImages[i];
-  nftModalImage.alt = "THE LAST 404 Archive #" + String(i+1).padStart(3,"0");
-  nftModalNumber.textContent = "THE 404 FILE  /  #" + String(i+1).padStart(3,"0");
-  nftModalTitle.textContent = "ARCHIVE ENTRY #" + String(i+1).padStart(3,"0");
-  nftModalStory.textContent = nftStories[i];
-  nftModal.classList.add("open");
-  nftModal.setAttribute("aria-hidden","false");
-  document.body.classList.add("modal-open");
-}
+  function closeStory() {
+    if (!modal) return;
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  }
 
-function closeNFTStory() {
-  nftModal.classList.remove("open");
-  nftModal.setAttribute("aria-hidden","true");
-  document.body.classList.remove("modal-open");
-}
-
-document.querySelectorAll(".nft-card").forEach((card) => {
-  const open = () => openNFTStory(Number(card.dataset.nft));
-  card.addEventListener("click", open);
-  card.addEventListener("keydown", (e) => {
-    if(e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      open();
-    }
+  document.querySelectorAll(".nft-card").forEach(function(card) {
+    card.addEventListener("click", function() {
+      openStory(Number(card.getAttribute("data-nft")));
+    });
+    card.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openStory(Number(card.getAttribute("data-nft")));
+      }
+    });
   });
-});
 
-nftModalClose.addEventListener("click", closeNFTStory);
-nftModal.querySelector("[data-close-nft]").addEventListener("click", closeNFTStory);
-document.addEventListener("keydown", (e) => {
-  if(e.key === "Escape" && nftModal.classList.contains("open")) closeNFTStory();
-});
+  closeBtn.addEventListener("click", closeStory);
+  backdrop.addEventListener("click", closeStory);
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeStory();
+  });
+})();
 </script>
+
 </body>
 </html>
