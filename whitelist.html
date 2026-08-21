@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE LAST 404 — Whitelist</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="pixel-brand">THE LAST 404</span><img src="the-last-404-logo.png" alt="THE LAST 404 logo"></a>
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menu">MENU</button>
+  <nav id="menu" aria-hidden="true">
+    <a href="index.html#story">WHY 404?</a><a href="index.html#archive">THE 404 FILES</a>
+    <a href="index.html#missions">MISSIONS</a><a href="whitelist.html">WHITELIST</a>
+  </nav>
+</header>
+<main>
+<section class="section whitelist-page">
+<div class="whitelist-box">
+<div class="eyebrow">THE LAST 404 / WHITELIST</div>
+<h1>REQUEST <em>ACCESS.</em></h1>
+<p class="muted">Complete the two archive missions, then submit your X username and EVM wallet address.</p>
+<div class="mission-list page-missions">
+<a class="mission" href="https://x.com/" target="_blank" rel="noopener"><b>01</b><span><strong>FOLLOW</strong><small>Follow THE LAST 404 on X / Twitter.</small></span><i>↗</i></a>
+<a class="mission" href="https://x.com/" target="_blank" rel="noopener"><b>02</b><span><strong>RETWEET</strong><small>Retweet the official THE LAST 404 post.</small></span><i>↗</i></a>
+</div>
+<form id="wlForm">
+<label>X / TWITTER USERNAME<input id="xUsername" required maxlength="80" placeholder="@username" autocomplete="off"></label>
+<label>EVM WALLET ADDRESS<input id="wallet" required maxlength="42" placeholder="0x..." autocomplete="off" inputmode="text"></label>
+<button class="btn gold submit" type="submit">JOIN WHITELIST</button>
+</form>
+<div class="success" id="success" hidden aria-live="polite"><strong>✓ WHITELIST REQUEST RECEIVED</strong><span id="redirectText">Redirecting to the archive in 3 seconds...</span></div>
+</div>
+</section>
+</main>
+<footer><span>THE LAST 404</span><span>LOST IN TIME. MINTED FOREVER.</span><span>© 2026</span></footer>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const C=window.LAST404_CONFIG||{};
+const mb=document.getElementById("menuBtn"),m=document.getElementById("menu");
+function closeMenu(){m.classList.remove("open");mb.setAttribute("aria-expanded","false");m.setAttribute("aria-hidden","true")}
+mb.addEventListener("click",()=>{const o=!m.classList.contains("open");m.classList.toggle("open",o);mb.setAttribute("aria-expanded",o);m.setAttribute("aria-hidden",!o)});
+m.querySelectorAll("a").forEach(a=>a.addEventListener("click",closeMenu));
+const form=document.getElementById("wlForm"),success=document.getElementById("success"),rt=document.getElementById("redirectText");
+const valid=v=>/^0x[a-fA-F0-9]{40}$/.test(v);
+form.addEventListener("submit",async e=>{
+e.preventDefault();
+const x=document.getElementById("xUsername").value.trim().replace(/^@/,""),w=document.getElementById("wallet").value.trim();
+if(!x)return alert("Please enter your X / Twitter username.");
+if(!valid(w))return alert("Please enter a valid EVM wallet address.");
+const btn=form.querySelector("button");btn.disabled=true;btn.textContent="SUBMITTING...";
+try{
+if(window.supabase&&C.SUPABASE_URL&&C.SUPABASE_ANON_KEY&&!C.DEMO_MODE){
+const client=window.supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY);
+const r=await client.from("whitelist_entries").insert({x_username:x,wallet_address:w});
+if(r.error){if(r.error.code==="23505")alert("This wallet address has already been submitted.");else alert("Submission failed. Please try again.");btn.disabled=false;btn.textContent="JOIN WHITELIST";return}
+}
+}catch(err){console.error(err);alert("Could not connect to the whitelist database.");btn.disabled=false;btn.textContent="JOIN WHITELIST";return}
+form.hidden=true;success.hidden=false;
+let s=3;const t=setInterval(()=>{s--;if(s>0)rt.textContent="Redirecting to the archive in "+s+" seconds...";else{clearInterval(t);location.href="index.html"}},1000);
+});
+</script>
+</body></html>
