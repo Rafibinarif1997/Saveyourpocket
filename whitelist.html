@@ -71,19 +71,20 @@ document.querySelector('.checker-link')?.addEventListener('click', e=>e.preventD
 </script>
 <script>
 (function(){
-  const follow = document.querySelector('.mission b')?.parentElement;
-  if(!follow) return;
-  const firstMission = document.querySelector('.mission');
-  if(!firstMission) return;
+  const tasks=document.querySelectorAll(".mission");
+  if(!tasks.length) return;
 
-  const key='last404_follow_completed';
-  if(localStorage.getItem(key)==='1'){
-    firstMission.classList.add('follow-complete');
-  }
+  const keys=["last404_follow_completed","last404_retweet_completed"];
 
-  firstMission.addEventListener('click',function(){
-    localStorage.setItem(key,'1');
-    firstMission.classList.add('follow-complete');
+  tasks.forEach((task,i)=>{
+    if(localStorage.getItem(keys[i])==="1"){
+      task.classList.add("follow-complete");
+    }
+
+    task.addEventListener("click",()=>{
+      localStorage.setItem(keys[i],"1");
+      task.classList.add("follow-complete");
+    });
   });
 })();
 </script>
