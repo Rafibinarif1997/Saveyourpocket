@@ -44,20 +44,68 @@ m.querySelectorAll("a").forEach(a=>a.addEventListener("click",closeMenu));
 const form=document.getElementById("wlForm"),success=document.getElementById("success"),rt=document.getElementById("redirectText");
 const valid=v=>/^0x[a-fA-F0-9]{40}$/.test(v);
 form.addEventListener("submit",async e=>{
-e.preventDefault();
-const x=document.getElementById("xUsername").value.trim().replace(/^@/,""),w=document.getElementById("wallet").value.trim();
-if(!x)return alert("Please enter your X / Twitter username.");
-if(!valid(w))return alert("Please enter a valid EVM wallet address.");
-const btn=form.querySelector("button");btn.disabled=true;btn.textContent="SUBMITTING...";
-try{
-if(window.supabase&&C.SUPABASE_URL&&C.SUPABASE_ANON_KEY&&!C.DEMO_MODE){
-const client=window.supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY);
-const r=await client.from("whitelist_entries").insert({x_username:x,wallet_address:w});
-if(r.error){if(r.error.code==="23505")alert("This wallet address has already been submitted.");else alert("Submission failed. Please try again.");btn.disabled=false;btn.textContent="JOIN WHITELIST";return}
-}
-}catch(err){console.error(err);alert("Could not connect to the whitelist database.");btn.disabled=false;btn.textContent="JOIN WHITELIST";return}
-form.hidden=true;success.hidden=false;
-let s=3;const t=setInterval(()=>{s--;if(s>0)rt.textContent="Redirecting to the archive in "+s+" seconds...";else{clearInterval(t);location.href="index.html"}},1000);
+  e.preventDefault();
+
+  const x=document.getElementById("xUsername").value.trim().replace(/^@/,"");
+  const wallet=document.getElementById("wallet").value.trim();
+  const btn=form.querySelector("button[type=submit]");
+
+  if(!x){
+    alert("Please enter your X / Twitter username.");
+    return;
+  }
+  if(!/^0x[a-fA-F0-9]{40}$/.test(wallet)){
+    alert("Please enter a valid EVM wallet address.");
+    return;
+  }
+
+  btn.disabled=true;
+  btn.textContent="SUBMITTING...";
+
+  try{
+    if(window.supabase && C.SUPABASE_URL && C.SUPABASE_ANON_KEY && !C.DEMO_MODE){
+      const client=window.supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY);
+      const result=await client.from("whitelist_entries").insert({
+        x_username:x,
+        wallet_address:wallet
+      });
+
+      if(result.error){
+        if(result.error.code==="23505"){
+          alert("This wallet address has already been submitted.");
+        }else{
+          console.error(result.error);
+          alert("Submission failed. Please try again.");
+        }
+        btn.disabled=false;
+        btn.textContent="JOIN WHITELIST";
+        return;
+      }
+    }
+
+    // Show success state before redirecting home.
+    form.hidden=true;
+    success.hidden=false;
+
+    let seconds=3;
+    rt.textContent="Redirecting to the archive in 3 seconds...";
+
+    const timer=setInterval(()=>{
+      seconds--;
+      if(seconds>0){
+        rt.textContent="Redirecting to the archive in "+seconds+" seconds...";
+      }else{
+        clearInterval(timer);
+        window.location.href="index.html";
+      }
+    },1000);
+
+  }catch(err){
+    console.error(err);
+    alert("Could not connect to the whitelist database.");
+    btn.disabled=false;
+    btn.textContent="JOIN WHITELIST";
+  }
 });
 </script>
 <script>
