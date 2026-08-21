@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE LAST 404 — Lost in Time. Minted Forever.</title>
+<meta name="description" content="THE LAST 404 — 404 unique NFTs inspired by forgotten objects and lost memories.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#home" aria-label="THE LAST 404 home">
+    <span class="pixel-brand">THE LAST 404</span>
+    <img src="assets/the-last-404-logo.png" alt="THE LAST 404 logo">
+  </a>
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="menu">MENU</button>
+  <nav id="menu" aria-hidden="true">
+    <a href="#story">WHY 404?</a>
+    <a href="#archive">THE 404 FILES</a>
+    <a href="#missions">MISSIONS</a>
+    <a href="#whitelist">WHITELIST</a>
+  </nav>
+</header>
+
+<main id="home">
+<section class="hero">
+  <div class="hero-copy">
+    <div class="pixel-title">THE LAST 404</div>
+    <div class="gold-rule"></div>
+    <p class="kicker">LOST IN TIME. MINTED FOREVER.</p>
+    <h1>404 UNIQUE NFTs</h1>
+    <p class="lead">A digital archive of forgotten objects, old memories, and things the world quietly left behind.</p>
+    <div class="hero-actions">
+      <a class="btn gold" href="#whitelist">JOIN WHITELIST</a>
+      <a class="btn" href="#archive">VIEW THE ARCHIVE</a>
+    </div>
+  </div>
+  <div class="hero-art">
+    <img src="assets/hero-9x16.png" alt="THE LAST 404 9:16 project artwork">
+  </div>
+</section>
+
+<section class="ticker" aria-label="Archive statement">
+  <div>THE MISSING DESERVE AN ARCHIVE &nbsp; • &nbsp; THE MISSING DESERVE AN ARCHIVE &nbsp; • &nbsp; THE MISSING DESERVE AN ARCHIVE &nbsp; • &nbsp;</div>
+</section>
+
+<section id="story" class="section story">
+  <div class="eyebrow">01 / THE STORY</div>
+  <div class="story-grid">
+    <h2>WHEN THE WORLD<br><em>MOVED ON.</em></h2>
+    <div class="copy">
+      <p>Every generation leaves something behind. A tool, a machine, a household object, a ritual, a memory.</p>
+      <p><strong>THE LAST 404</strong> gives those forgotten things a permanent digital archive.</p>
+      <p>404 means something is missing. Our collection turns that missing feeling into something you can own, collect, and remember.</p>
+    </div>
+  </div>
+</section>
+
+<section id="archive" class="section archive">
+  <div class="eyebrow">02 / THE ARCHIVE</div>
+  <h2>THE <em>404</em> FILES</h2>
+  <div class="archive-grid">
+    <article><img src="assets/archive-01.png" alt="Archive object 01"></article>
+    <article><img src="assets/archive-02.png" alt="Archive object 02"></article>
+    <article><img src="assets/archive-03.png" alt="Archive object 03"></article>
+    <article><img src="assets/archive-04.png" alt="Archive object 04"></article>
+    <article><img src="assets/archive-05.png" alt="Archive object 05"></article>
+    <article><img src="assets/archive-06.png" alt="Archive object 06"></article>
+  </div>
+  <p class="reveal-note">OTHER ARCHIVE ENTRIES WILL BE REVEALED LATER.</p>
+</section>
+
+<section id="missions" class="section missions">
+  <div class="eyebrow">03 / MISSIONS</div>
+  <h2>HELP US <em>FIND<br>THE MISSING.</em></h2>
+  <div class="mission-list">
+    <a class="mission" href="https://x.com/" target="_blank" rel="noopener">
+      <b>01</b><span><strong>FOLLOW</strong><small>Follow THE LAST 404 on X / Twitter.</small></span><i>↗</i>
+    </a>
+    <a class="mission" href="https://x.com/" target="_blank" rel="noopener">
+      <b>02</b><span><strong>RETWEET</strong><small>Retweet the official THE LAST 404 post.</small></span><i>↗</i>
+    </a>
+  </div>
+</section>
+
+<section id="whitelist" class="section whitelist">
+  <div class="whitelist-box">
+    <div class="eyebrow">04 / WHITELIST</div>
+    <h2>REQUEST <em>ACCESS.</em></h2>
+    <p class="muted">No account. No login. No referral. Just your X username and EVM wallet address.</p>
+    <form id="wlForm">
+      <label>X / TWITTER USERNAME
+        <input id="xUsername" name="x_username" required maxlength="80" placeholder="@username" autocomplete="off">
+      </label>
+      <label>EVM WALLET ADDRESS
+        <input id="wallet" name="wallet_address" required maxlength="42" placeholder="0x..." autocomplete="off" inputmode="text">
+      </label>
+      <button class="btn gold submit" type="submit">SUBMIT WHITELIST APPLICATION ↗</button>
+    </form>
+    <div class="success" id="success" hidden>
+      <strong>✓ APPLICATION RECEIVED</strong>
+      <span>Your whitelist request has been recorded.</span>
+    </div>
+  </div>
+</section>
+
+<section class="section twitter">
+  <div class="eyebrow">05 / X / TWITTER</div>
+  <h2>FOLLOW <em>THE LAST 404.</em></h2>
+  <a class="btn gold" href="https://x.com/" target="_blank" rel="noopener">OPEN X / TWITTER ↗</a>
+</section>
+</main>
+
+<footer>
+  <span>THE LAST 404</span>
+  <span>LOST IN TIME. MINTED FOREVER.</span>
+  <span>© 2026</span>
+</footer>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</body>
+</html>
