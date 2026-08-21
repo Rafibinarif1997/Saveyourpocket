@@ -272,3 +272,5 @@ background:#05070a;color:#ffe07a;font:900 28px/1 "Courier New",monospace;cursor:
 .mission.follow-complete{
   border-bottom-color:#234d7e;
 }
+
+.join-top-btn{background:linear-gradient(135deg,#0b4ea8,#176fe5,#2f8cff);color:#fff;border:1px solid #7ebeff;box-shadow:0 4px 18px rgba(20,105,220,.28),3px 3px 0 rgba(0,0,0,.42)}
