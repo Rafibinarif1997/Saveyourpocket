@@ -59,14 +59,27 @@
   <div class="eyebrow">02 / THE ARCHIVE</div>
   <h2>THE <em>404</em> FILES</h2>
   <div class="archive-grid">
-    <article><img src="archive-01.png" alt="Archive object 01"></article>
-    <article><img src="archive-02.png" alt="Archive object 02"></article>
-    <article><img src="archive-03.png" alt="Archive object 03"></article>
-    <article><img src="archive-04.png" alt="Archive object 04"></article>
-    <article><img src="archive-05.png" alt="Archive object 05"></article>
-    <article><img src="archive-06.png" alt="Archive object 06"></article>
+    <article class="nft-card" data-nft="0" tabindex="0" role="button" aria-label="Open archive story 1"><img src="archive-01.png" alt="Archive object 01"></article>
+    <article class="nft-card" data-nft="1" tabindex="0" role="button" aria-label="Open archive story 2"><img src="archive-02.png" alt="Archive object 02"></article>
+    <article class="nft-card" data-nft="2" tabindex="0" role="button" aria-label="Open archive story 3"><img src="archive-03.png" alt="Archive object 03"></article>
+    <article class="nft-card" data-nft="3" tabindex="0" role="button" aria-label="Open archive story 4"><img src="archive-04.png" alt="Archive object 04"></article>
+    <article class="nft-card" data-nft="4" tabindex="0" role="button" aria-label="Open archive story 5"><img src="archive-05.png" alt="Archive object 05"></article>
+    <article class="nft-card" data-nft="5" tabindex="0" role="button" aria-label="Open archive story 6"><img src="archive-06.png" alt="Archive object 06"></article>
   </div>
   <p class="reveal-note">OTHER ARCHIVE ENTRIES WILL BE REVEALED LATER.</p>
+<div class="nft-modal" id="nftModal" aria-hidden="true">
+  <div class="nft-modal-backdrop" data-close-nft></div>
+  <div class="nft-modal-card" role="dialog" aria-modal="true" aria-labelledby="nftModalTitle">
+    <button class="nft-modal-close" id="nftModalClose" aria-label="Close NFT story">×</button>
+    <img id="nftModalImage" src="" alt="">
+    <div class="nft-modal-content">
+      <div class="eyebrow" id="nftModalNumber">THE 404 FILE</div>
+      <h3 id="nftModalTitle">ARCHIVE ENTRY</h3>
+      <p id="nftModalStory"></p>
+    </div>
+  </div>
+</div>
+
 </section>
 
 <section class="section twitter">
@@ -94,5 +107,54 @@ document.addEventListener("click",function(e){
   f.style.setProperty("--x",e.clientX+"px"); f.style.setProperty("--y",e.clientY+"px");
   f.classList.remove("flash"); void f.offsetWidth; f.classList.add("flash");
 });
-</script></body>
+</script>
+<script>
+const nftStories = ['Once, every kitchen had one.\nA little box holding five simple spices—\nand the smell of home.\nForgotten in the age of convenience.\nPreserved in the archive.', 'Once, the world gathered around its voice.\nNews, music, stories—\nall carried through the static.\nThen the world found newer voices.\nThe radio was left behind.', 'When the lights went out, it was always there.\nA small flame in the darkness—\nkeeping homes, roads, and memories alive.\nThen electricity made it unnecessary.\nThe lantern was forgotten.', 'Once, people waited for the sound of a letter arriving.\nMessages crossed towns, carried by hand—\nholding words meant for someone far away.\nThen the world learned to send messages instantly.\nThe post box was left behind.', 'Before refrigerators, there was the ice box.\nSimple, quiet, and always waiting for the next block of ice.\nThen cold became automatic.\nThe ice box became a memory.', 'Before numbers ruled the harvest, grain was measured by hand.\nA simple wooden box passed from one pair of hands to another—\nmeasuring food, trade, and the rhythm of everyday life.\nThen scales replaced it.\nThe little box became a forgotten measure of another time.'];
+const nftImages = [
+  "archive-01.png","archive-02.png","archive-03.png",
+  "archive-04.png","archive-05.png","archive-06.png"
+];
+
+const nftModal = document.getElementById("nftModal");
+const nftModalImage = document.getElementById("nftModalImage");
+const nftModalTitle = document.getElementById("nftModalTitle");
+const nftModalNumber = document.getElementById("nftModalNumber");
+const nftModalStory = document.getElementById("nftModalStory");
+const nftModalClose = document.getElementById("nftModalClose");
+
+function openNFTStory(i) {
+  nftModalImage.src = nftImages[i];
+  nftModalImage.alt = "THE LAST 404 Archive #" + String(i+1).padStart(3,"0");
+  nftModalNumber.textContent = "THE 404 FILE  /  #" + String(i+1).padStart(3,"0");
+  nftModalTitle.textContent = "ARCHIVE ENTRY #" + String(i+1).padStart(3,"0");
+  nftModalStory.textContent = nftStories[i];
+  nftModal.classList.add("open");
+  nftModal.setAttribute("aria-hidden","false");
+  document.body.classList.add("modal-open");
+}
+
+function closeNFTStory() {
+  nftModal.classList.remove("open");
+  nftModal.setAttribute("aria-hidden","true");
+  document.body.classList.remove("modal-open");
+}
+
+document.querySelectorAll(".nft-card").forEach((card) => {
+  const open = () => openNFTStory(Number(card.dataset.nft));
+  card.addEventListener("click", open);
+  card.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      open();
+    }
+  });
+});
+
+nftModalClose.addEventListener("click", closeNFTStory);
+nftModal.querySelector("[data-close-nft]").addEventListener("click", closeNFTStory);
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape" && nftModal.classList.contains("open")) closeNFTStory();
+});
+</script>
+</body>
 </html>
