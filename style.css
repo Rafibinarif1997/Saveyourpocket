@@ -197,3 +197,78 @@ background:#05070a;color:#ffe07a;font:900 28px/1 "Courier New",monospace;cursor:
  .nft-modal-content h3{font-size:34px}
  .nft-modal-content p{font-size:14px;line-height:1.75}
 }
+
+/* Top Join Whitelist button — replaces the first-page menu button */
+.join-top-btn{
+  display:inline-block;
+  padding:11px 16px;
+  border:1px solid #d6aa3d;
+  background:#1976ff;
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.11em;
+  text-decoration:none;
+  box-shadow:3px 3px 0 rgba(0,0,0,.45);
+  transition:transform .16s steps(2),filter .16s steps(2),box-shadow .16s steps(2);
+}
+.join-top-btn:hover{
+  transform:translate(-2px,-2px);
+  filter:brightness(1.1);
+  box-shadow:5px 5px 0 rgba(0,0,0,.5);
+}
+.join-top-btn:active{
+  transform:translate(2px,2px);
+  box-shadow:none;
+}
+
+@media(max-width:700px){
+  .nft-modal{padding:24px}
+  .nft-modal-card{
+    width:min(430px,88vw);
+    max-height:84vh;
+    grid-template-columns:1fr;
+  }
+  .nft-modal-card>img{
+    width:100%;
+    height:auto;
+    max-height:45vh;
+    min-height:0;
+    object-fit:contain;
+    background:#020305;
+    border-right:0;
+    border-bottom:1px solid #272e39;
+  }
+  .nft-modal-content{
+    padding:22px 20px 24px;
+  }
+  .nft-modal-content h3{
+    font-size:28px;
+    margin:10px 0 14px;
+  }
+  .nft-modal-content p{
+    font-size:13px;
+    line-height:1.65;
+  }
+  .nft-modal-close{
+    width:34px;
+    height:34px;
+    font-size:24px;
+    right:8px;
+    top:8px;
+  }
+}
+
+/* Follow task completion state */
+.mission.follow-complete i{
+  color:#2f8cff;
+  font-size:0;
+}
+.mission.follow-complete i:after{
+  content:"✓";
+  font-size:21px;
+  font-weight:900;
+}
+.mission.follow-complete{
+  border-bottom-color:#234d7e;
+}
