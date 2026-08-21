@@ -1,0 +1,15 @@
+THE LAST 404 — CLEAN URL SETUP
+
+Upload/replace these files in the GitHub Pages publishing source:
+- index.html
+- whitelist.html
+- _config.yml
+
+Keep all existing image/CSS/JS files unchanged.
+
+After GitHub Pages rebuilds:
+Home: /
+Whitelist: /whitelist/
+
+The navigation uses / and /whitelist/ instead of index.html/whitelist.html.
+GitHub Pages may take a few minutes to publish changes.
