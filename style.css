@@ -53,3 +53,147 @@ input:focus{border-color:var(--gold)}.submit{width:100%;margin-top:7px}.success{
 @media(max-width:480px){.pixel-brand{font-size:15px}.brand img{width:40px;height:40px}.pixel-title{font-size:48px}.archive-grid{gap:10px}.archive-grid img{aspect-ratio:1}.mission{grid-template-columns:30px 1fr 25px}}
 
 .whitelist-page{min-height:calc(100vh - 82px);display:flex;align-items:center;justify-content:center}.whitelist-page .whitelist-box{width:min(950px,100%)}.whitelist-page h1{font-size:clamp(50px,6.4vw,88px);line-height:.88;margin:24px 0 0;font-weight:900}.page-missions{margin-top:28px;margin-bottom:34px}@media(max-width:850px){.whitelist-page{min-height:calc(100vh - 74px)}}
+
+/* PREMIUM PIXEL VIBE — visual-only enhancement */
+.pixel-site{background:#020306;image-rendering:auto}
+.pixel-brand,.pixel-title{font-family:"Courier New",monospace;font-weight:900;letter-spacing:.015em;
+text-transform:uppercase;white-space:nowrap}
+.pixel-brand{font-size:18px;letter-spacing:.01em;text-shadow:2px 0 #6d4d10,0 2px #000}
+.pixel-title{letter-spacing:-.035em;line-height:.88;text-shadow:2px 0 #6b4d11,4px 4px 0 #000,0 0 18px rgba(255,205,85,.08)}
+.hero{position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:0;pointer-events:none;background:
+linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+background-size:16px 16px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent 85%)}
+.pixel-particles{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.pixel-particles:before,.pixel-particles:after{content:"";position:absolute;width:3px;height:3px;background:var(--gold2);
+box-shadow:120px 110px #277dff,310px 210px #dca92f,520px 80px #68a9ff,760px 330px #dca92f,
+920px 150px #277dff,1120px 410px #dca92f,1300px 90px #68a9ff,1460px 300px #dca92f,
+170px 520px #68a9ff,430px 640px #dca92f,690px 510px #277dff,980px 620px #dca92f,
+1230px 540px #68a9ff,1500px 650px #dca92f;opacity:.35;animation:pixelDrift 18s linear infinite}
+.pixel-particles:after{transform:translateY(-100vh);opacity:.2;animation-duration:25s;animation-direction:reverse}
+@keyframes pixelDrift{0%{transform:translate3d(0,110vh,0)}100%{transform:translate3d(-45px,-20vh,0)}}
+.btn,.menu-btn,.mission{transition:transform .16s steps(2),filter .16s steps(2),border-color .16s steps(2),box-shadow .16s steps(2)}
+.btn:hover,.menu-btn:hover,.mission:hover{transform:translate(-2px,-2px);filter:brightness(1.12);box-shadow:4px 4px 0 rgba(220,169,47,.25)}
+.btn:active,.menu-btn:active,.mission:active{transform:translate(2px,2px);box-shadow:none}
+.click-flash{position:fixed;inset:0;z-index:100;pointer-events:none;background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(255,214,102,.2),transparent 12%);opacity:0}
+.click-flash.flash{animation:clickFlash .28s steps(3)}
+@keyframes clickFlash{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){.pixel-particles:before,.pixel-particles:after,.ticker div{animation:none}.btn,.menu-btn,.mission{transition:none}}
+
+/* V3 — animation layer only */
+.pixel-site, body{
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:-20%;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(circle at 18% 25%,rgba(39,125,255,.08) 0 2px,transparent 3px),
+    radial-gradient(circle at 72% 62%,rgba(220,169,47,.09) 0 2px,transparent 3px),
+    radial-gradient(circle at 44% 82%,rgba(104,169,255,.07) 0 1px,transparent 2px);
+  background-size:170px 170px,230px 230px,130px 130px;
+  animation: archiveFloat 22s linear infinite;
+}
+body::after{
+  animation: scanPulse 7s steps(6,end) infinite;
+}
+@keyframes archiveFloat{
+  0%{transform:translate3d(0,0,0)}
+  50%{transform:translate3d(28px,-22px,0)}
+  100%{transform:translate3d(0,0,0)}
+}
+@keyframes scanPulse{
+  0%,100%{opacity:.025}
+  50%{opacity:.055}
+}
+.hero-art img{
+  animation: heroPixelFloat 6s ease-in-out infinite;
+}
+@keyframes heroPixelFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-7px)}
+}
+.topbar,.hero,.ticker,.section,footer{
+  position:relative;
+  z-index:2;
+}
+.checker-link{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  cursor:default;
+}
+.checker-link small{
+  color:var(--gold);
+  font-size:8px;
+  letter-spacing:.08em;
+  border:1px solid #66511d;
+  padding:3px 5px;
+}
+@media(max-width:850px){
+  .checker-link{align-items:flex-start;flex-direction:column;gap:3px}
+}
+
+/* NFT story popups — additive only */
+.nft-card{cursor:pointer;position:relative}
+.nft-card:after{content:"CLICK TO READ STORY";position:absolute;left:18px;bottom:55px;
+padding:6px 8px;background:rgba(2,3,5,.9);border:1px solid #6e551d;color:#e7c45f;
+font:900 8px "Courier New",monospace;letter-spacing:.08em;opacity:0;transform:translateY(4px);
+transition:opacity .16s steps(2),transform .16s steps(2);pointer-events:none}
+.nft-card:hover:after,.nft-card:focus-visible:after{opacity:1;transform:translateY(0)}
+.nft-card:focus-visible{outline:2px solid #e2b33c;outline-offset:3px}
+
+body.modal-open{overflow:hidden}
+.nft-modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:24px}
+.nft-modal.open{display:flex;animation:modalIn .18s steps(3)}
+.nft-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(8px)}
+.nft-modal-card{position:relative;z-index:1;width:min(900px,96vw);max-height:92vh;overflow:auto;
+display:grid;grid-template-columns:minmax(260px,.85fr) minmax(280px,1.15fr);gap:0;
+background:linear-gradient(145deg,#0c1018,#030507);border:1px solid #84631e;
+box-shadow:10px 10px 0 rgba(0,0,0,.65),0 30px 120px #000}
+.nft-modal-card>img{width:100%;height:100%;min-height:360px;object-fit:cover;border-right:1px solid #272e39}
+.nft-modal-content{padding:48px 42px;align-self:center}
+.nft-modal-content h3{font:900 clamp(34px,4vw,58px)/.9 "Courier New",monospace;color:#ffe07a;
+margin:18px 0 28px;letter-spacing:-.04em}
+.nft-modal-content p{white-space:pre-line;color:#b2b5bb;font:500 15px/1.9 Arial,Helvetica,sans-serif;margin:0}
+.nft-modal-close{position:absolute;right:12px;top:10px;z-index:3;width:38px;height:38px;
+border:1px solid #6f551c;background:#07090d;color:#ffe07a;font:900 27px/1 "Courier New",monospace;cursor:pointer}
+.nft-modal-close:hover{background:#dca92f;color:#05070a}
+@keyframes modalIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+@media(max-width:700px){
+  .nft-modal{padding:12px}
+  .nft-modal-card{grid-template-columns:1fr;max-height:94vh}
+  .nft-modal-card>img{height:auto;min-height:0;max-height:52vh;border-right:0;border-bottom:1px solid #272e39}
+  .nft-modal-content{padding:28px 24px 32px}
+  .nft-modal-content h3{font-size:34px;margin:14px 0 20px}
+  .nft-modal-content p{font-size:14px;line-height:1.75}
+}
+
+/* FIXED NFT STORY POPUP */
+.nft-card{cursor:pointer !important;position:relative}
+.nft-card:focus{outline:2px solid #e2b33c;outline-offset:3px}
+body.modal-open{overflow:hidden !important}
+.nft-modal{display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;padding:18px}
+.nft-modal.open{display:flex}
+.nft-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.86);backdrop-filter:blur(7px)}
+.nft-modal-card{position:relative;z-index:2;width:min(900px,96vw);max-height:92vh;overflow:auto;
+display:grid;grid-template-columns:minmax(280px,.85fr) minmax(280px,1.15fr);
+background:#070a0f;border:2px solid #dca92f;box-shadow:0 0 0 4px #111827,12px 12px 0 #000}
+.nft-modal-card>img{width:100%;height:100%;min-height:380px;object-fit:cover;border-right:1px solid #303844}
+.nft-modal-content{padding:42px 38px;align-self:center}
+.nft-modal-content h3{margin:16px 0 24px;color:#ffe07a;font:900 clamp(30px,4vw,52px)/.9 "Courier New",monospace;letter-spacing:-.04em}
+.nft-modal-content p{margin:0;color:#c2c4c9;white-space:pre-line;font:500 15px/1.9 Arial,Helvetica,sans-serif}
+.nft-modal-close{position:absolute;right:10px;top:10px;z-index:5;width:40px;height:40px;border:1px solid #dca92f;
+background:#05070a;color:#ffe07a;font:900 28px/1 "Courier New",monospace;cursor:pointer}
+.nft-modal-close:hover{background:#dca92f;color:#05070a}
+@media(max-width:700px){
+ .nft-modal-card{grid-template-columns:1fr;max-height:94vh}
+ .nft-modal-card>img{min-height:0;max-height:48vh;border-right:0;border-bottom:1px solid #303844}
+ .nft-modal-content{padding:28px 22px 32px}
+ .nft-modal-content h3{font-size:34px}
+ .nft-modal-content p{font-size:14px;line-height:1.75}
+}
