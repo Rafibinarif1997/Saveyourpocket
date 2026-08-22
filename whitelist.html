@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>THE LAST 404 — Recover NFT</title>
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body class="pixel-site">
 <header class="topbar">
-  <a class="brand" href="/"><span class="pixel-brand">THE LAST 404</span><img src="/the-last-404-logo.png" alt="THE LAST 404 logo"></a>
+  <a class="brand" href="index.html"><span class="pixel-brand">THE LAST 404</span><img src="the-last-404-logo.png" alt="THE LAST 404 logo"></a>
+  <button class="wallet-btn" id="connectWalletBtn" type="button">CONNECT WALLET</button>
 </header>
 
 <main>
@@ -42,11 +43,23 @@
 <div class="click-flash" id="clickFlash" aria-hidden="true"></div>
 </main>
 
+<div class="wallet-modal" id="walletModal" aria-hidden="true">
+  <div class="wallet-modal-backdrop" data-close-wallet></div>
+  <div class="wallet-modal-card" role="dialog" aria-modal="true" aria-labelledby="walletModalTitle">
+    <button class="wallet-modal-close" type="button" id="walletModalClose" aria-label="Close">×</button>
+    <div class="eyebrow">CONNECT WALLET</div>
+    <h3 id="walletModalTitle">CHOOSE YOUR WALLET</h3>
+    <p class="wallet-muted">Connect an EVM wallet to check your $TL404 holder status.</p>
+    <div id="walletOptions" class="wallet-options"></div>
+  </div>
+</div>
+
 <footer><span>THE LAST 404</span><span>LOST IN TIME. MINTED FOREVER.</span><span>© 2026</span></footer>
 
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
-<script src="claim-page.js?v=3"></script>
+<script src="wallet.js"></script>
+<script src="claim-page.js?v=4"></script>
 <script>
 document.addEventListener("click",function(e){
   const f=document.getElementById("clickFlash"); if(!f)return;
