@@ -88,6 +88,22 @@
   close.addEventListener("click",closeModal);
   modal.querySelector("[data-close-wallet]").addEventListener("click",closeModal);
 
+  // Keep the selected wallet synchronized across pages.
+  if(window.ethereum && window.ethereum.on){
+    window.ethereum.on("accountsChanged", function(accounts){
+      if(accounts && accounts[0]){
+        localStorage.setItem("last404_wallet", accounts[0]);
+        btn.textContent=short(accounts[0]);
+        btn.classList.add("connected");
+      }else{
+        localStorage.removeItem("last404_wallet");
+        localStorage.removeItem("last404_wallet_name");
+        btn.textContent="CONNECT WALLET";
+        btn.classList.remove("connected");
+      }
+    });
+  }
+
   const saved=localStorage.getItem("last404_wallet");
   if(saved) { btn.textContent=short(saved); btn.classList.add("connected"); }
 })();

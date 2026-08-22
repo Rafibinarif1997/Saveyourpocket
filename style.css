@@ -303,6 +303,6 @@ background:#05070a;color:#ffe07a;font:900 28px/1 "Courier New",monospace;cursor:
 .status-row strong{color:#e8e5dd}
 .status-row strong.eligible{color:#63c88a}
 .claim-button{width:100%;margin-top:22px}
-.claim-button:disabled{opacity:.45;cursor:not-allowed}
+.claim-button:disabled{opacity:.78;cursor:not-allowed}
 .claim-error{margin-top:18px;padding:16px;border:1px solid #713232;background:#16090a;color:#ffb5b5;font-size:11px;line-height:1.6}
 @media(max-width:480px){.wallet-btn{padding:10px 12px;font-size:9px}.wallet-modal-card{padding:26px 20px}}
