@@ -275,11 +275,34 @@ background:#05070a;color:#ffe07a;font:900 28px/1 "Courier New",monospace;cursor:
 
 .join-top-btn{background:linear-gradient(135deg,#0b4ea8,#176fe5,#2f8cff);color:#fff;border:1px solid #7ebeff;box-shadow:0 4px 18px rgba(20,105,220,.28),3px 3px 0 rgba(0,0,0,.42)}
 
-/* NFT recovery page */
-.claim-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
-.claim-status{margin-top:24px;padding:16px;border:1px solid #303743;background:#070a0f;color:#c2c4c9;font:900 12px/1.6 "Courier New",monospace;letter-spacing:.08em}
-.claim-status[data-good="1"]{border-color:#3d8dff;color:#9dc9ff}
-.claim-result{margin-top:20px;padding:18px;border:1px solid #dca92f;background:#0b0f15;color:#f4d369;font:700 13px/1.7 Arial,sans-serif}
-.claim-result a{color:#9dc9ff;text-decoration:none}
-.small-note{margin-top:22px;font-size:12px!important}
-@media(max-width:700px){.claim-actions{flex-direction:column}.claim-actions .btn{width:100%;text-align:center}}
+/* Wallet + NFT Recovery UI */
+.wallet-btn{padding:12px 18px;border:1px solid #4e83ff;background:linear-gradient(135deg,#1456d8,#2e8bff);color:#fff;font-size:11px;font-weight:900;letter-spacing:.12em;cursor:pointer;box-shadow:0 8px 25px rgba(39,125,255,.18)}
+.wallet-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.wallet-btn.connected{background:linear-gradient(135deg,#0e6bff,#4b9cff);border-color:#70b2ff}
+.wallet-modal{display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;padding:20px}
+.wallet-modal.open{display:flex}
+.wallet-modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(10px)}
+.wallet-modal-card{position:relative;width:min(440px,100%);background:linear-gradient(145deg,#0e131d,#040609);border:1px solid #3b4657;padding:32px;box-shadow:0 30px 100px #000;z-index:1}
+.wallet-modal-close{position:absolute;right:12px;top:8px;border:0;background:none;color:#aaa;font-size:28px;cursor:pointer}
+.wallet-modal-card h3{font-size:30px;margin:12px 0;color:var(--gold2)}
+.wallet-muted{color:var(--muted);font-size:13px;line-height:1.6}
+.wallet-options{display:grid;gap:10px;margin-top:22px}
+.wallet-option{display:flex;align-items:center;gap:13px;width:100%;padding:14px;background:#080c12;border:1px solid #293240;color:#eee;cursor:pointer;text-align:left;font-weight:900}
+.wallet-option:hover{border-color:#4b91ff;background:#0c1420}
+.wallet-option img{width:30px;height:30px;object-fit:contain;border-radius:8px}
+.wallet-option i{margin-left:auto;color:#69a8ff;font-style:normal}
+.wallet-fallback{width:30px;text-align:center;color:#68a9ff;font-size:22px}
+.wallet-loading,.wallet-empty{color:#858b95;font-size:11px;letter-spacing:.1em;line-height:1.6;padding:14px 0}
+.wallet-error{color:#ffaaaa;font-size:11px;padding:10px;border:1px solid #6c3030;background:#16090a}
+.claim-box{max-width:800px}
+.claim-wallet,.claim-status{border:1px solid #2c3542;background:#070b11;padding:18px;margin-top:22px}
+.claim-label{display:block;color:#737b87;font-size:9px;letter-spacing:.15em;font-weight:900;margin-bottom:8px}
+.claim-wallet strong{font-family:"Courier New",monospace;font-size:14px;color:#dfe6f0;word-break:break-all}
+.status-row{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid #202733;font-size:10px;letter-spacing:.1em;color:#747c87}
+.status-row:last-child{border-bottom:0}
+.status-row strong{color:#e8e5dd}
+.status-row strong.eligible{color:#63c88a}
+.claim-button{width:100%;margin-top:22px}
+.claim-button:disabled{opacity:.45;cursor:not-allowed}
+.claim-error{margin-top:18px;padding:16px;border:1px solid #713232;background:#16090a;color:#ffb5b5;font-size:11px;line-height:1.6}
+@media(max-width:480px){.wallet-btn{padding:10px 12px;font-size:9px}.wallet-modal-card{padding:26px 20px}}

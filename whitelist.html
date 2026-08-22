@@ -5,165 +5,57 @@ permalink: /whitelist/
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>THE LAST 404 — Whitelist</title>
+<title>THE LAST 404 — Recover NFT</title>
 <link rel="stylesheet" href="/style.css">
 </head>
-<body>
+<body class="pixel-site">
 <header class="topbar">
   <a class="brand" href="/"><span class="pixel-brand">THE LAST 404</span><img src="/the-last-404-logo.png" alt="THE LAST 404 logo"></a>
-  
-  
 </header>
+
 <main>
 <section class="section whitelist-page">
-<div class="whitelist-box">
-<div class="eyebrow">THE LAST 404 / WHITELIST</div>
-<h1>REQUEST <em>ACCESS.</em></h1>
-<p class="muted">Complete the two archive missions, then submit your X username and EVM wallet address.</p>
-<div class="mission-list page-missions">
-<a class="mission" href="https://x.com/TLast404" target="_blank" rel="noopener"><b>01</b><span><strong>FOLLOW</strong><small>Follow THE LAST 404 on X / Twitter.</small></span><i>↗</i></a>
-<a class="mission" href="https://x.com/TLast404/status/2090774459393458635" target="_blank" rel="noopener"><b>02</b><span><strong>RETWEET</strong><small>Retweet the official THE LAST 404 post.</small></span><i>↗</i></a>
-</div>
-<form id="wlForm">
-<label>X / TWITTER USERNAME<input id="xUsername" required maxlength="80" placeholder="@username" autocomplete="off"></label>
-<label>EVM WALLET ADDRESS<input id="wallet" required maxlength="42" placeholder="0x..." autocomplete="off" inputmode="text"></label>
-<button class="btn gold submit" type="submit">JOIN WHITELIST</button>
-</form>
-<div class="success" id="success" hidden aria-live="polite" style="display:none"><strong>✓ WHITELIST REQUEST RECEIVED</strong><span id="redirectText">Redirecting to the archive in 3 seconds...</span></div>
-</div>
-</section>
+  <div class="whitelist-box claim-box">
+    <div class="eyebrow">THE LAST 404 / RECOVERY</div>
+    <h1>RECOVER <em>AN NFT.</em></h1>
+    <p class="muted">Hold at least <strong>200,000 $TL404</strong> to recover one forgotten artifact.</p>
 
+    <div class="claim-wallet" id="claimWalletBox">
+      <span class="claim-label">CONNECTED WALLET</span>
+      <strong id="claimWallet">NOT CONNECTED</strong>
+    </div>
+
+    <div class="claim-status" id="claimStatus">
+      <div class="status-row"><span>TL404 BALANCE</span><strong id="claimBalance">—</strong></div>
+      <div class="status-row"><span>REQUIRED</span><strong>200,000 TL404</strong></div>
+      <div class="status-row"><span>STATUS</span><strong id="claimEligibility">CHECKING...</strong></div>
+    </div>
+
+    <button class="btn gold claim-button" id="claimButton" type="button" disabled>RECOVER NFT</button>
+    <a class="btn" href="/">BACK TO ARCHIVE</a>
+
+    <div class="success" id="claimSuccess" hidden>
+      <strong>✓ ARTIFACT RECOVERED</strong>
+      <span id="claimSuccessText"></span>
+    </div>
+    <div class="claim-error" id="claimError" hidden></div>
+  </div>
+</section>
 <div class="pixel-particles" aria-hidden="true"></div>
 <div class="click-flash" id="clickFlash" aria-hidden="true"></div>
 </main>
+
 <footer><span>THE LAST 404</span><span>LOST IN TIME. MINTED FOREVER.</span><span>© 2026</span></footer>
-<script>
-const SUPABASE_URL = "https://dmabnckfrvhiourqsxwz.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtYWJuY2tmcnZoaW91cnFzeHd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNzQ5NjYsImV4cCI6MjEwMjg1MDk2Nn0.a_4e1l-sVpSQB8_N6yQM1luePI--BinryDQ2vSJ5jeg";
 
-const form = document.getElementById("wlForm");
-const success = document.getElementById("success");
-const rt = document.getElementById("redirectText");
-
-function errorBox(message){
-  let box=document.getElementById("wlError");
-  if(!box){
-    box=document.createElement("div");
-    box.id="wlError";
-    box.style.cssText="margin-top:18px;padding:16px;border:1px solid #7d2d2d;background:#160708;color:#ffb5b5;font:700 12px/1.6 Arial,sans-serif;";
-    form.parentNode.insertBefore(box,form.nextSibling);
-  }
-  box.textContent=message;
-}
-
-form.addEventListener("submit", async function(e){
-  e.preventDefault();
-  e.stopPropagation();
-
-  const x=document.getElementById("xUsername").value.trim().replace(/^@/,"");
-  const wallet=document.getElementById("wallet").value.trim();
-  const btn=form.querySelector('button[type="submit"]');
-
-  if(!x){ errorBox("Please enter your X / Twitter username."); return; }
-  if(!/^0x[a-fA-F0-9]{40}$/.test(wallet)){
-    errorBox("Invalid EVM wallet address. Please enter a valid 0x... address.");
-    return;
-  }
-
-  btn.disabled=true;
-  btn.textContent="SUBMITTING...";
-  errorBox("Connecting to the archive...");
-
-  try{
-    const response=await fetch(SUPABASE_URL+"/rest/v1/whitelist_entries",{
-      method:"POST",
-      headers:{
-        "apikey":SUPABASE_KEY,
-        "Authorization":"Bearer "+SUPABASE_KEY,
-        "Content-Type":"application/json",
-        "Prefer":"return=minimal"
-      },
-      body:JSON.stringify({
-        x_username:x,
-        wallet_address:wallet
-      })
-    });
-
-    if(!response.ok){
-      const text=await response.text();
-      let message=text;
-      try{
-        const j=JSON.parse(text);
-        message=j.message || j.error || j.hint || text;
-      }catch(_){}
-
-      if(response.status===409){
-        errorBox("This wallet address is already on the whitelist.");
-      }else if(response.status===401 || response.status===403){
-        errorBox("Supabase rejected the submission (permission/RLS).");
-      }else{
-        errorBox("Submission failed: "+message);
-      }
-
-      btn.disabled=false;
-      btn.textContent="JOIN WHITELIST";
-      return;
-    }
-
-    // Real successful insert.
-    form.style.display="none";
-    const err=document.getElementById("wlError");
-    if(err) err.remove();
-
-    success.hidden=false;
-    success.style.display="block";
-
-    let seconds=3;
-    rt.textContent="Redirecting to the archive in 3 seconds...";
-
-    const timer=setInterval(()=>{
-      seconds--;
-      if(seconds>0){
-        rt.textContent="Redirecting to the archive in "+seconds+" seconds...";
-      }else{
-        clearInterval(timer);
-        window.location.replace("/");
-      }
-    },1000);
-
-  }catch(err){
-    console.error(err);
-    errorBox("Connection failed: "+(err.message || "Please check your internet connection."));
-    btn.disabled=false;
-    btn.textContent="JOIN WHITELIST";
-  }
-});
-</script>
-
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+<script src="claim-page.js"></script>
 <script>
 document.addEventListener("click",function(e){
-  const f=document.getElementById("clickFlash");
-  if(!f)return;
-  f.style.setProperty("--x",e.clientX+"px");
-  f.style.setProperty("--y",e.clientY+"px");
-  f.classList.remove("flash");
-  void f.offsetWidth;
-  f.classList.add("flash");
+  const f=document.getElementById("clickFlash"); if(!f)return;
+  f.style.setProperty("--x",e.clientX+"px"); f.style.setProperty("--y",e.clientY+"px");
+  f.classList.remove("flash"); void f.offsetWidth; f.classList.add("flash");
 });
-</script>
-
-<script>
-(function(){
-  const tasks=document.querySelectorAll(".mission");
-  const keys=["last404_follow_completed","last404_retweet_completed"];
-  tasks.forEach((task,i)=>{
-    if(localStorage.getItem(keys[i])==="1") task.classList.add("follow-complete");
-    task.addEventListener("click",()=> {
-      localStorage.setItem(keys[i],"1");
-      task.classList.add("follow-complete");
-    });
-  });
-})();
 </script>
 </body>
 </html>
