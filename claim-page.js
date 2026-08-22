@@ -90,15 +90,7 @@
       const divisor=10n**BigInt(decimals);
       const required=MINIMUM*divisor;
 
-      function formatUnitsLocal(value, decimals) {
-  const d = 10n ** BigInt(decimals);
-  const whole = value / d;
-  const frac = value % d;
-  if (frac === 0n) return whole.toString() + " TL404";
-  let f = frac.toString().padStart(decimals, "0").replace(/0+$/, "");
-  return whole.toString() + "." + f + " TL404";
-}
-      balanceEl.textContent=formatUnitsLocal(balance,decimals);
+      balanceEl.textContent=ethers.formatUnits(balance,decimals)+" TL404";
 
       if(balance>=required){
         setStatus("READY TO RECOVER",true);
@@ -124,29 +116,58 @@
     error.hidden=true;
 
     try{
-      const base=(CONFIG.SUPABASE_URL||"").replace(/\/$/,"");
+      const base=(CONFIG.SUPABASE_URL||"").replace(/\/+$/,"");
       const anon=CONFIG.SUPABASE_ANON_KEY||"";
-      if(!base) throw new Error("Claim service is not configured.");
 
-      const r=await fetch(base+"/functions/v1/claim-nft",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          ...(anon?{"apikey":anon,"Authorization":"Bearer "+anon}:{})
-        },
-        body:JSON.stringify({wallet})
+      if(!base) throw new Error("Claim service is not configured.");
+      if(!anon) throw new Error("Supabase publishable key is not configured.");
+
+      // Load Supabase JS only when a claim is actually requested.
+      if(!window.supabase){
+        await new Promise((resolve,reject)=>{
+          const s=document.createElement("script");
+          s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+          s.onload=resolve;
+          s.onerror=()=>reject(new Error("Could not load Supabase client."));
+          document.head.appendChild(s);
+        });
+      }
+
+      const client=window.supabase.createClient(base,anon,{
+        auth:{persistSession:false,autoRefreshToken:false}
       });
 
-      const text=await r.text();
-      let data={}; try{data=JSON.parse(text)}catch(_){}
-      if(!r.ok||!data.success) throw new Error(data.error||("Claim service returned HTTP "+r.status));
+      const {data,error:invokeError}=await client.functions.invoke(
+        "claim-nft",
+        {
+          body:{wallet}
+        }
+      );
+
+      if(invokeError){
+        throw new Error(invokeError.message||"Claim service request failed.");
+      }
+
+      if(!data || !data.success){
+        throw new Error(
+          (data && (data.error||data.message)) ||
+          "Claim was not completed."
+        );
+      }
 
       success.hidden=false;
-      successText.textContent="NFT #"+String(data.tokenId).padStart(3,"0")+" has been transferred to your wallet. Transaction: "+data.txHash;
+      successText.textContent=
+        "NFT #"+String(data.tokenId).padStart(3,"0")+
+        " has been transferred to your wallet. Transaction: "+data.txHash;
       button.textContent="RECOVERED";
+
     }catch(e){
-      console.error(e);
-      showError(e && e.message ? e.message : "Claim service is unavailable. Please try again.");
+      console.error("NFT claim error:",e);
+      showError(
+        e && e.message
+          ? e.message
+          : "Claim service is unavailable. Please try again."
+      );
       button.disabled=false;
       button.textContent="RECOVER NFT";
     }
