@@ -138,7 +138,7 @@
       button.textContent="RECOVERED";
     }catch(e){
       console.error(e);
-      showError(e.message||"Claim failed. Please try again.");
+      showError(e && e.message ? e.message : "Claim service is unavailable. Please try again.");
       button.disabled=false;
       button.textContent="RECOVER NFT";
     }
