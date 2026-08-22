@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE LAST 404 — Recover NFT</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="pixel-site">
+<header class="topbar">
+  <a class="brand" href="/"><span class="pixel-brand">THE LAST 404</span><img src="/the-last-404-logo.png" alt="THE LAST 404 logo"></a>
+  <button class="wallet-btn" id="connectWalletBtn" type="button">CONNECT WALLET</button>
+</header>
+
+<main>
+<section class="section whitelist-page">
+  <div class="whitelist-box claim-box">
+    <div class="eyebrow">THE LAST 404 / RECOVERY</div>
+    <h1>RECOVER <em>AN NFT.</em></h1>
+    <p class="muted">Hold at least <strong>200,000 $TL404</strong> to recover one forgotten artifact.</p>
+
+    <div class="claim-wallet" id="claimWalletBox">
+      <span class="claim-label">CONNECTED WALLET</span>
+      <strong id="claimWallet">NOT CONNECTED</strong>
+    </div>
+
+    <div class="claim-status" id="claimStatus">
+      <div class="status-row"><span>TL404 BALANCE</span><strong id="claimBalance">—</strong></div>
+      <div class="status-row"><span>REQUIRED</span><strong>200,000 TL404</strong></div>
+      <div class="status-row"><span>STATUS</span><strong id="claimEligibility">CHECKING...</strong></div>
+    </div>
+
+    <button class="btn gold claim-button" id="claimButton" type="button" disabled>RECOVER NFT</button>
+    <a class="btn" href="/">BACK TO ARCHIVE</a>
+
+    <div class="success" id="claimSuccess" hidden>
+      <strong>✓ ARTIFACT RECOVERED</strong>
+      <span id="claimSuccessText"></span>
+    </div>
+    <div class="claim-error" id="claimError" hidden></div>
+  </div>
+</section>
+<div class="pixel-particles" aria-hidden="true"></div>
+<div class="click-flash" id="clickFlash" aria-hidden="true"></div>
+</main>
+
+<div class="wallet-modal" id="walletModal" aria-hidden="true">
+  <div class="wallet-modal-backdrop" data-close-wallet></div>
+  <div class="wallet-modal-card" role="dialog" aria-modal="true" aria-labelledby="walletModalTitle">
+    <button class="wallet-modal-close" type="button" id="walletModalClose" aria-label="Close">×</button>
+    <div class="eyebrow">CONNECT WALLET</div>
+    <h3 id="walletModalTitle">CHOOSE YOUR WALLET</h3>
+    <p class="wallet-muted">Connect an EVM wallet to check your $TL404 holder status.</p>
+    <div id="walletOptions" class="wallet-options"></div>
+  </div>
+</div>
+
+<footer><span>THE LAST 404</span><span>LOST IN TIME. MINTED FOREVER.</span><span>© 2026</span></footer>
+
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+<script src="/wallet.js"></script>
+<script src="claim-page.js?v=4"></script>
+<script>
+document.addEventListener("click",function(e){
+  const f=document.getElementById("clickFlash"); if(!f)return;
+  f.style.setProperty("--x",e.clientX+"px"); f.style.setProperty("--y",e.clientY+"px");
+  f.classList.remove("flash"); void f.offsetWidth; f.classList.add("flash");
+});
+</script>
+</body>
+</html>
