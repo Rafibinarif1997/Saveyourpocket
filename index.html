@@ -26,7 +26,7 @@
     <h1>404 UNIQUE NFTs</h1>
     <p class="lead">A digital archive of forgotten objects, old memories, and things the world quietly left behind.</p>
     <div class="hero-actions">
-      <a class="btn gold recover-btn" href="/whitelist/">RECOVER NFT</a>
+      <a class="btn gold recover-btn" id="recoverNftBtn" href="/whitelist/">RECOVER NFT</a>
       <a class="btn" href="#archive">VIEW THE ARCHIVE</a>
     </div>
   </div>
@@ -185,5 +185,17 @@ document.addEventListener("click",function(e){
 })();
 </script>
 
+<script>
+(function(){
+  const recover = document.getElementById("recoverNftBtn");
+  if(!recover) return;
+  recover.addEventListener("click", function(){
+    const w = localStorage.getItem("last404_wallet");
+    if(w && /^0x[a-fA-F0-9]{40}$/.test(w)){
+      recover.href = "/whitelist/?wallet=" + encodeURIComponent(w);
+    }
+  });
+})();
+</script>
 </body>
 </html>
