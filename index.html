@@ -185,5 +185,28 @@ document.addEventListener("click",function(e){
 })();
 </script>
 
+
+<script>
+document.addEventListener("click", function(e) {
+  const el = e.target.closest('a,button');
+  if (!el) return;
+  const text = (el.textContent || "").trim().toLowerCase();
+  if (!text.includes("recover nft")) return;
+
+  try {
+    const wallet =
+      localStorage.getItem("connectedWallet") ||
+      localStorage.getItem("walletAddress") ||
+      localStorage.getItem("wallet") ||
+      localStorage.getItem("last404Wallet");
+
+    if (wallet && /^0x[a-fA-F0-9]{40}$/.test(wallet)) {
+      e.preventDefault();
+      location.href = "/recover/?wallet=" + encodeURIComponent(wallet);
+    }
+  } catch (_) {}
+});
+</script>
+
 </body>
 </html>
