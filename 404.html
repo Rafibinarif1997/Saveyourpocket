@@ -192,5 +192,79 @@
 })();
 </script>
 
+
+<script>
+(() => {
+  const SUPABASE_URL = "https://dmabnckfrvhiourqsxwz.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_6aBgxULaemO2R05FKZTk6A_pU_J4Aat";
+  const button = document.getElementById("claimButton");
+  const success = document.getElementById("claimSuccess");
+  const successText = document.getElementById("claimSuccessText");
+  const error = document.getElementById("claimError");
+
+  function wallet() {
+    try {
+      const p = new URLSearchParams(location.search).get("wallet");
+      if (p && /^0x[a-fA-F0-9]{40}$/.test(p)) return p;
+      for (const k of ["last404_wallet","connectedWallet","walletAddress","wallet"]) {
+        const v = localStorage.getItem(k);
+        if (v && /^0x[a-fA-F0-9]{40}$/.test(v)) return v;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  if (!button) return;
+
+  button.addEventListener("click", async () => {
+    const w = wallet();
+    if (!w) {
+      if (error) { error.hidden = false; error.textContent = "Connect your wallet first."; }
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "RECOVERING…";
+    if (error) error.hidden = true;
+
+    try {
+      const r = await fetch(SUPABASE_URL + "/functions/v1/claim-nft", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY
+        },
+        body: JSON.stringify({ wallet: w })
+      });
+
+      const raw = await r.text();
+      let data = {};
+      try { data = JSON.parse(raw); } catch (_) {}
+
+      if (!r.ok || !data.success) {
+        throw new Error(data.error || ("Claim service returned HTTP " + r.status));
+      }
+
+      if (success) success.hidden = false;
+      if (successText) {
+        successText.textContent =
+          "NFT #" + String(data.tokenId).padStart(3, "0") +
+          " has been transferred to your wallet. Transaction: " + data.txHash;
+      }
+      button.textContent = "RECOVERED";
+    } catch (e) {
+      console.error(e);
+      if (error) {
+        error.hidden = false;
+        error.textContent = e?.message || "Claim failed. Please try again.";
+      }
+      button.disabled = false;
+      button.textContent = "RECOVER NFT";
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
