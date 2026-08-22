@@ -1,176 +1,103 @@
+---
+permalink: /claim/
+---
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>THE LAST 404 — Lost in Time. Minted Forever.</title>
-<meta name="description" content="THE LAST 404 — 404 unique NFTs inspired by forgotten objects and lost memories.">
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THE LAST 404 — Recover an Artifact</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body class="pixel-site">
 <header class="topbar">
-  <a class="brand" href="#home" aria-label="THE LAST 404 home">
-    <span class="pixel-brand">THE LAST 404</span>
-    <img src="the-last-404-logo.png" alt="THE LAST 404 logo">
-  </a>
-  <a class="join-top-btn" href="/whitelist/">JOIN WHITELIST</a>
-  
+  <a class="brand" href="/"><span class="pixel-brand">THE LAST 404</span><img src="/the-last-404-logo.png" alt="THE LAST 404 logo"></a>
 </header>
-
-<main id="home">
-<section class="hero">
-  <div class="hero-copy">
-    <div class="pixel-title">THE LAST 404</div>
-    <div class="gold-rule"></div>
-    <p class="kicker">LOST IN TIME. MINTED FOREVER.</p>
-    <h1>404 UNIQUE NFTs</h1>
-    <p class="lead">A digital archive of forgotten objects, old memories, and things the world quietly left behind.</p>
-    <div class="hero-actions">
-      <a class="btn gold" href="/whitelist/">JOIN WHITELIST</a>
-      <a class="btn" href="/claim/">RECOVER AN NFT</a>
-      <a class="btn" href="#archive">VIEW THE ARCHIVE</a>
-    </div>
-  </div>
-  <div class="hero-art">
-    <img src="hero-9x16.png" alt="THE LAST 404 9:16 project artwork">
-  </div>
-</section>
-
-<section class="ticker" aria-label="Archive statement">
-  <div>THE MISSING DESERVE AN ARCHIVE &nbsp; • &nbsp; THE MISSING DESERVE AN ARCHIVE &nbsp; • &nbsp; THE MISSING DESERVE AN ARCHIVE &nbsp; • &nbsp;</div>
-</section>
-
-<section id="story" class="section story">
-  <div class="eyebrow">01 / THE STORY</div>
-  <div class="story-grid">
-    <h2>WHEN THE WORLD<br><em>MOVED ON.</em></h2>
-    <div class="copy">
-      <p>Every generation leaves something behind. A tool, a machine, a household object, a ritual, a memory.</p>
-      <p><strong>THE LAST 404</strong> gives those forgotten things a permanent digital archive.</p>
-      <p>404 means something is missing. Our collection turns that missing feeling into something you can own, collect, and remember.</p>
-    </div>
-  </div>
-</section>
-
-<section id="archive" class="section archive">
-  <div class="eyebrow">02 / THE ARCHIVE</div>
-  <h2>THE <em>404</em> FILES</h2>
-  <div class="archive-grid">
-    <article class="nft-card" data-nft="0" tabindex="0" role="button" aria-label="Open archive story 1"><img src="archive-01.png" alt="Archive object 01"></article>
-    <article class="nft-card" data-nft="1" tabindex="0" role="button" aria-label="Open archive story 2"><img src="archive-02.png" alt="Archive object 02"></article>
-    <article class="nft-card" data-nft="2" tabindex="0" role="button" aria-label="Open archive story 3"><img src="archive-03.png" alt="Archive object 03"></article>
-    <article class="nft-card" data-nft="3" tabindex="0" role="button" aria-label="Open archive story 4"><img src="archive-04.png" alt="Archive object 04"></article>
-    <article class="nft-card" data-nft="4" tabindex="0" role="button" aria-label="Open archive story 5"><img src="archive-05.png" alt="Archive object 05"></article>
-    <article class="nft-card" data-nft="5" tabindex="0" role="button" aria-label="Open archive story 6"><img src="archive-06.png" alt="Archive object 06"></article>
-  </div>
-  <p class="reveal-note">OTHER ARCHIVE ENTRIES WILL BE REVEALED LATER.</p>
-<div class="nft-modal" id="nftModal" aria-hidden="true">
-  <div class="nft-modal-backdrop" data-close-nft></div>
-  <div class="nft-modal-card" role="dialog" aria-modal="true" aria-labelledby="nftModalTitle">
-    <button class="nft-modal-close" id="nftModalClose" aria-label="Close NFT story">×</button>
-    <img id="nftModalImage" src="" alt="">
-    <div class="nft-modal-content">
-      <div class="eyebrow" id="nftModalNumber">THE 404 FILE</div>
-      <h3 id="nftModalTitle">ARCHIVE ENTRY</h3>
-      <p id="nftModalStory"></p>
-    </div>
-  </div>
+<main>
+<section class="section whitelist-page">
+<div class="whitelist-box">
+<div class="eyebrow">THE LAST 404 / RECOVERY</div>
+<h1>RECOVER <em>AN ARTIFACT.</em></h1>
+<p class="muted">Hold at least <strong>200,000 $TL404</strong> in your connected wallet to recover one forgotten artifact. One wallet can claim once.</p>
+<div class="claim-status" id="status">WALLET NOT CONNECTED.</div>
+<div class="claim-actions">
+  <button class="btn gold" id="connectBtn" type="button">CONNECT WALLET</button>
+  <button class="btn" id="claimBtn" type="button" disabled>RECOVER NFT</button>
 </div>
-
+<div class="claim-result" id="result" hidden></div>
+<p class="muted small-note">The NFT is transferred from the project Team Wallet. No new NFT is minted during recovery.</p>
+</div>
 </section>
-
-<section class="section twitter">
-  <div class="eyebrow">05 / X / TWITTER</div>
-  <h2>FOLLOW <em>THE LAST 404.</em></h2>
-  <a class="btn gold" href="https://x.com/tlast404" target="_blank" rel="noopener">OPEN X / TWITTER ↗</a>
-</section>
-
 <div class="pixel-particles" aria-hidden="true"></div>
 <div class="click-flash" id="clickFlash" aria-hidden="true"></div>
-
-<div id="nftModal" class="nft-modal" aria-hidden="true">
-  <div class="nft-modal-backdrop" id="nftBackdrop"></div>
-  <div class="nft-modal-card" role="dialog" aria-modal="true" aria-labelledby="nftModalTitle">
-    <button type="button" class="nft-modal-close" id="nftModalClose" aria-label="Close">×</button>
-    <img id="nftModalImage" src="" alt="">
-    <div class="nft-modal-content">
-      <div class="eyebrow" id="nftModalNumber">THE 404 FILE</div>
-      <h3 id="nftModalTitle">ARCHIVE ENTRY</h3>
-      <p id="nftModalStory"></p>
-    </div>
-  </div>
-</div>
-
 </main>
-
-<footer>
-  <span>THE LAST 404</span>
-  <span>LOST IN TIME. MINTED FOREVER.</span>
-  <span>© 2026</span>
-</footer>
-
-<script src="config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js"></script>
+<footer><span>THE LAST 404</span><span>LOST IN TIME. MINTED FOREVER.</span><span>© 2026</span></footer>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
 <script>
-document.addEventListener("click",function(e){
-  const f=document.getElementById("clickFlash"); if(!f)return;
-  f.style.setProperty("--x",e.clientX+"px"); f.style.setProperty("--y",e.clientY+"px");
-  f.classList.remove("flash"); void f.offsetWidth; f.classList.add("flash");
-});
-</script>
+const FUNCTION_URL = "https://dmabnckfrvhiourqsxwz.supabase.co/functions/v1/claim-nft";
+const statusEl = document.getElementById("status");
+const resultEl = document.getElementById("result");
+const connectBtn = document.getElementById("connectBtn");
+const claimBtn = document.getElementById("claimBtn");
+let address = null;
 
+function setStatus(text, good=false){
+  statusEl.textContent = text;
+  statusEl.dataset.good = good ? "1" : "0";
+}
 
-<script>
-(function() {
-  const stories = ['Once, every kitchen had one.\nA little box holding five simple spices—\nand the smell of home.\nForgotten in the age of convenience.\nPreserved in the archive.', 'Once, the world gathered around its voice.\nNews, music, stories—\nall carried through the static.\nThen the world found newer voices.\nThe radio was left behind.', 'When the lights went out, it was always there.\nA small flame in the darkness—\nkeeping homes, roads, and memories alive.\nThen electricity made it unnecessary.\nThe lantern was forgotten.', 'Once, people waited for the sound of a letter arriving.\nMessages crossed towns, carried by hand—\nholding words meant for someone far away.\nThen the world learned to send messages instantly.\nThe post box was left behind.', 'Before refrigerators, there was the ice box.\nSimple, quiet, and always waiting for the next block of ice.\nThen cold became automatic.\nThe ice box became a memory.', 'Before numbers ruled the harvest, grain was measured by hand.\nA simple wooden box passed from one pair of hands to another—\nmeasuring food, trade, and the rhythm of everyday life.\nThen scales replaced it.\nThe little box became a forgotten measure of another time.'];
-  const images = ["archive-01.png","archive-02.png","archive-03.png","archive-04.png","archive-05.png","archive-06.png"];
-  const modal = document.getElementById("nftModal");
-  const modalImage = document.getElementById("nftModalImage");
-  const modalNumber = document.getElementById("nftModalNumber");
-  const modalTitle = document.getElementById("nftModalTitle");
-  const modalStory = document.getElementById("nftModalStory");
-  const closeBtn = document.getElementById("nftModalClose");
-  const backdrop = document.getElementById("nftBackdrop");
-
-  function openStory(i) {
-    if (!modal) return;
-    modalImage.src = images[i];
-    modalImage.alt = "THE LAST 404 NFT #" + String(i + 1).padStart(3, "0");
-    modalNumber.textContent = "THE 404 FILE / #" + String(i + 1).padStart(3, "0");
-    modalTitle.textContent = "ARCHIVE ENTRY #" + String(i + 1).padStart(3, "0");
-    modalStory.textContent = stories[i];
-    modal.classList.add("open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
+async function connect(){
+  if(!window.ethereum){
+    setStatus("NO EVM WALLET FOUND. OPEN THIS PAGE WITH METAMASK OR ANOTHER EVM WALLET.");
+    return;
   }
+  try{
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const network = await provider.getNetwork();
+    if(network.chainId !== 4663n){
+      try { await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0x1237"}]}); }
+      catch(e){ setStatus("PLEASE SWITCH YOUR WALLET TO ROBINHOOD CHAIN."); return; }
+    }
+    const accounts = await provider.send("eth_requestAccounts", []);
+    address = ethers.getAddress(accounts[0]);
+    connectBtn.textContent = address.slice(0,6)+"..."+address.slice(-4);
+    claimBtn.disabled = false;
+    setStatus("WALLET CONNECTED. READY TO CHECK ELIGIBILITY.", true);
+  }catch(e){ console.error(e); setStatus("WALLET CONNECTION FAILED."); }
+}
 
-  function closeStory() {
-    if (!modal) return;
-    modal.classList.remove("open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("modal-open");
+async function claim(){
+  if(!address) return;
+  claimBtn.disabled = true;
+  claimBtn.textContent = "VERIFYING...";
+  resultEl.hidden = true;
+  try{
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const nonce = Date.now().toString();
+    const message = `THE LAST 404 NFT RECOVERY\\nWallet: ${address}\\nNonce: ${nonce}`;
+    const signature = await signer.signMessage(message);
+
+    const response = await fetch(FUNCTION_URL, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({wallet:address,message,signature})
+    });
+    const data = await response.json();
+    if(!response.ok || !data.success) throw new Error(data.error || "Claim failed.");
+    resultEl.hidden=false;
+    resultEl.innerHTML = `<strong>✓ ARTIFACT RECOVERED</strong><br>NFT #${String(data.tokenId).padStart(3,"0")} has been sent to your wallet.<br><a href="https://robinhoodscan.io/tx/${data.txHash}" target="_blank" rel="noopener">VIEW TRANSACTION ↗</a>`;
+    setStatus("RECOVERY COMPLETE.", true);
+    claimBtn.textContent="ALREADY CLAIMED";
+  }catch(e){
+    console.error(e);
+    resultEl.hidden=false;
+    resultEl.textContent=e.message || "Claim failed.";
+    claimBtn.disabled=false;
+    claimBtn.textContent="RECOVER NFT";
   }
-
-  document.querySelectorAll(".nft-card").forEach(function(card) {
-    card.addEventListener("click", function() {
-      openStory(Number(card.getAttribute("data-nft")));
-    });
-    card.addEventListener("keydown", function(e) {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        openStory(Number(card.getAttribute("data-nft")));
-      }
-    });
-  });
-
-  closeBtn.addEventListener("click", closeStory);
-  backdrop.addEventListener("click", closeStory);
-  document.addEventListener("keydown", function(e) {
-    if (e.key === "Escape") closeStory();
-  });
-})();
+}
+connectBtn.addEventListener("click",connect);
+claimBtn.addEventListener("click",claim);
 </script>
-
 </body>
 </html>
