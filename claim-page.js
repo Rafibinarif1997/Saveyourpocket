@@ -1,202 +1,393 @@
-(function(){
-  const CONFIG=window.LAST404_CONFIG||{};
-  const TL404=CONFIG.TL404_TOKEN||"0x316eC28D4e69Adf4697F0cA7DE45c164C295eC9d";
-  const MINIMUM=200000n;
-  const PUBLIC_RPC="https://rpc.mainnet.chain.robinhood.com";
+(function () {
+  const CONFIG = window.LAST404_CONFIG || {};
 
-  const walletEl=document.getElementById("claimWallet");
-  const balanceEl=document.getElementById("claimBalance");
-  const eligibilityEl=document.getElementById("claimEligibility");
-  const button=document.getElementById("claimButton");
-  const success=document.getElementById("claimSuccess");
-  const successText=document.getElementById("claimSuccessText");
-  const error=document.getElementById("claimError");
-  const STORAGE_KEY="last404_wallet";
+  const TL404 =
+    CONFIG.TL404_TOKEN ||
+    "0x316eC28D4e69Adf4697F0cA7DE45c164C295eC9d";
 
-  const valid=a=>/^0x[a-fA-F0-9]{40}$/.test(a||"");
-  const checksum=a=>a.slice(0,8)+"…"+a.slice(-6);
+  const MINIMUM = 200000n;
 
-  function getWallet(){
-    const params=new URLSearchParams(location.search);
-    const fromUrl=params.get("wallet");
+  const PUBLIC_RPC =
+    "https://rpc.mainnet.chain.robinhood.com";
 
-    if(valid(fromUrl)){
-      localStorage.setItem(STORAGE_KEY,fromUrl);
+  const walletEl =
+    document.getElementById("claimWallet");
+
+  const balanceEl =
+    document.getElementById("claimBalance");
+
+  const eligibilityEl =
+    document.getElementById("claimEligibility");
+
+  const button =
+    document.getElementById("claimButton");
+
+  const success =
+    document.getElementById("claimSuccess");
+
+  const successText =
+    document.getElementById("claimSuccessText");
+
+  const error =
+    document.getElementById("claimError");
+
+  const STORAGE_KEY =
+    "last404_wallet";
+
+
+  // -----------------------------
+  // BASIC HELPERS
+  // -----------------------------
+
+  const valid = (address) =>
+    /^0x[a-fA-F0-9]{40}$/.test(address || "");
+
+
+  const checksum = (address) =>
+    address.slice(0, 8) +
+    "…" +
+    address.slice(-6);
+
+
+  function getWallet() {
+
+    const params =
+      new URLSearchParams(location.search);
+
+    const fromUrl =
+      params.get("wallet");
+
+    if (valid(fromUrl)) {
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        fromUrl
+      );
+
       return fromUrl;
     }
 
-    const saved=localStorage.getItem(STORAGE_KEY);
-    return valid(saved)?saved:null;
+
+    const saved =
+      localStorage.getItem(STORAGE_KEY);
+
+    return valid(saved)
+      ? saved
+      : null;
   }
 
-  function setStatus(text,eligible=false){
-    eligibilityEl.textContent=text;
-    eligibilityEl.classList.toggle("eligible",eligible);
+
+  function setStatus(
+    text,
+    eligible = false
+  ) {
+
+    eligibilityEl.textContent =
+      text;
+
+    eligibilityEl.classList.toggle(
+      "eligible",
+      eligible
+    );
   }
 
-  function showError(msg){
-    error.hidden=false;
-    error.textContent=msg;
+
+  function showError(message) {
+
+    error.hidden = false;
+
+    error.textContent =
+      message;
   }
 
-  async function rpc(method,params){
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),10000);
 
-    try{
-      const r=await fetch(PUBLIC_RPC,{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          jsonrpc:"2.0",
-          id:Date.now(),
-          method,
-          params
-        }),
-        signal:controller.signal
-      });
+  // -----------------------------
+  // ROBINHOOD RPC
+  // -----------------------------
 
-      if(!r.ok){
-        throw new Error("RPC HTTP "+r.status);
-      }
+  async function rpc(
+    method,
+    params
+  ) {
 
-      const data=await r.json();
+    const controller =
+      new AbortController();
 
-      if(data.error){
+    const timer =
+      setTimeout(
+        () => controller.abort(),
+        10000
+      );
+
+    try {
+
+      const response =
+        await fetch(
+          PUBLIC_RPC,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+              jsonrpc: "2.0",
+              id: Date.now(),
+              method: method,
+              params: params
+            }),
+
+            signal: controller.signal
+          }
+        );
+
+
+      if (!response.ok) {
+
         throw new Error(
-          data.error.message||"RPC error"
+          "RPC HTTP " +
+          response.status
         );
       }
 
+
+      const data =
+        await response.json();
+
+
+      if (data.error) {
+
+        throw new Error(
+          data.error.message ||
+          "RPC error"
+        );
+      }
+
+
       return data.result;
 
-    }finally{
+    } finally {
+
       clearTimeout(timer);
     }
   }
 
-  function balanceCall(wallet){
-    return "0x70a08231"+
+
+  // -----------------------------
+  // ERC20 BALANCE CALL
+  // -----------------------------
+
+  function balanceCall(wallet) {
+
+    return (
+      "0x70a08231" +
       wallet
         .slice(2)
         .toLowerCase()
-        .padStart(64,"0");
+        .padStart(64, "0")
+    );
   }
 
-  function formatUnitsLocal(value,decimals){
-    const d=10n**BigInt(decimals);
-    const whole=value/d;
-    const frac=value%d;
 
-    if(frac===0n){
-      return whole.toString()+" TL404";
+  // -----------------------------
+  // FORMAT TOKEN BALANCE
+  // -----------------------------
+
+  function formatUnitsLocal(
+    value,
+    decimals
+  ) {
+
+    const divisor =
+      10n ** BigInt(decimals);
+
+    const whole =
+      value / divisor;
+
+    const fraction =
+      value % divisor;
+
+
+    if (fraction === 0n) {
+
+      return (
+        whole.toString() +
+        " TL404"
+      );
     }
 
-    let f=frac
-      .toString()
-      .padStart(decimals,"0")
-      .replace(/0+$/,"");
 
-    return whole.toString()+"."+f+" TL404";
+    let fractionText =
+      fraction
+        .toString()
+        .padStart(
+          decimals,
+          "0"
+        )
+        .replace(/0+$/, "");
+
+
+    return (
+      whole.toString() +
+      "." +
+      fractionText +
+      " TL404"
+    );
   }
 
-  async function check(){
 
-    error.hidden=true;
-    button.disabled=true;
-    button.textContent="RECOVER NFT";
+  // -----------------------------
+  // CHECK WALLET / BALANCE
+  // -----------------------------
 
-    const wallet=getWallet();
+  async function check() {
 
-    if(!wallet){
-      walletEl.textContent="NOT CONNECTED";
-      balanceEl.textContent="—";
-      setStatus("CONNECT WALLET FIRST");
+    error.hidden = true;
+
+    button.disabled = true;
+
+    button.textContent =
+      "RECOVER NFT";
+
+
+    const wallet =
+      getWallet();
+
+
+    if (!wallet) {
+
+      walletEl.textContent =
+        "NOT CONNECTED";
+
+      balanceEl.textContent =
+        "—";
+
+      setStatus(
+        "CONNECT WALLET FIRST"
+      );
+
       return;
     }
 
-    walletEl.textContent=checksum(wallet);
-    setStatus("CHECKING…");
 
-    try{
+    walletEl.textContent =
+      checksum(wallet);
 
-      const chain=await rpc(
-        "eth_chainId",
-        []
-      );
+    setStatus(
+      "CHECKING…"
+    );
 
-      if(
-        Number(BigInt(chain))!==4663
-      ){
+
+    try {
+
+      // Check chain
+      const chain =
+        await rpc(
+          "eth_chainId",
+          []
+        );
+
+
+      if (
+        Number(
+          BigInt(chain)
+        ) !== 4663
+      ) {
+
         throw new Error(
           "Robinhood Chain Mainnet RPC unavailable."
         );
       }
 
-      const decimalsHex=await rpc(
-        "eth_call",
-        [
-          {
-            to:TL404,
-            data:"0x313ce567"
-          },
-          "latest"
-        ]
-      );
 
-      const decimals=
-        Number(BigInt(decimalsHex));
+      // Get TL404 decimals
+      const decimalsHex =
+        await rpc(
+          "eth_call",
+          [
+            {
+              to: TL404,
+              data: "0x313ce567"
+            },
+            "latest"
+          ]
+        );
 
-      const raw=await rpc(
-        "eth_call",
-        [
-          {
-            to:TL404,
-            data:balanceCall(wallet)
-          },
-          "latest"
-        ]
-      );
 
-      const balance=BigInt(raw);
+      const decimals =
+        Number(
+          BigInt(decimalsHex)
+        );
 
-      const divisor=
-        10n**BigInt(decimals);
 
-      const required=
-        MINIMUM*divisor;
+      // Get wallet balance
+      const raw =
+        await rpc(
+          "eth_call",
+          [
+            {
+              to: TL404,
+              data:
+                balanceCall(wallet)
+            },
+            "latest"
+          ]
+        );
 
-      balanceEl.textContent=
+
+      const balance =
+        BigInt(raw);
+
+
+      const divisor =
+        10n ** BigInt(decimals);
+
+
+      const required =
+        MINIMUM * divisor;
+
+
+      balanceEl.textContent =
         formatUnitsLocal(
           balance,
           decimals
         );
 
-      if(balance>=required){
+
+      if (
+        balance >= required
+      ) {
 
         setStatus(
           "READY TO RECOVER",
           true
         );
 
-        button.disabled=false;
+        button.disabled =
+          false;
 
-      }else{
+      } else {
 
         setStatus(
           "NOT ELIGIBLE"
         );
 
-        button.disabled=true;
+        button.disabled =
+          true;
       }
 
-    }catch(e){
 
-      console.error(e);
+    } catch (err) {
 
-      balanceEl.textContent="—";
+      console.error(
+        "TL404 check error:",
+        err
+      );
+
+      balanceEl.textContent =
+        "—";
 
       setStatus(
         "CHECK FAILED"
@@ -209,18 +400,19 @@
   }
 
 
-  /*
-   * RECOVER NFT
-   * Directly calls Supabase Edge Function.
-   */
+  // ==================================================
+  // RECOVER NFT
+  // ==================================================
 
   button.addEventListener(
     "click",
-    async()=>{
+    async function () {
 
-      const wallet=getWallet();
+      const wallet =
+        getWallet();
 
-      if(!wallet){
+
+      if (!wallet) {
 
         showError(
           "Connect your wallet first."
@@ -229,176 +421,230 @@
         return;
       }
 
-      button.disabled=true;
-      button.textContent=
+
+      button.disabled =
+        true;
+
+      button.textContent =
         "RECOVERING…";
 
-      error.hidden=true;
+      error.hidden =
+        true;
 
-      try{
 
-        const base=
-          (CONFIG.SUPABASE_URL||"")
-          .replace(/\/+$/,"");
+      try {
 
-        const anon=
-          CONFIG.SUPABASE_ANON_KEY||"";
+        const base =
+          (
+            CONFIG.SUPABASE_URL ||
+            ""
+          ).replace(
+            /\/+$/,
+            ""
+          );
 
-        if(!base){
+
+        if (!base) {
 
           throw new Error(
             "Claim service is not configured."
           );
         }
 
-        const endpoint=
-          base+
+
+        const endpoint =
+          base +
           "/functions/v1/claim-nft";
 
-        const headers={
-          "Content-Type":
-            "text/plain;charset=UTF-8",
-
-          "Accept":
-            "application/json"
-        };
 
         /*
-         * Supabase publishable key.
-         * Never put service-role key/private key here.
+         * IMPORTANT:
+         *
+         * We intentionally do NOT send:
+         *
+         * Authorization
+         * apikey
+         *
+         * headers here.
+         *
+         * Your function has JWT verification disabled.
+         *
+         * Using text/plain also avoids the browser's
+         * application/json preflight.
          */
 
-        if(anon){
 
-          headers["apikey"]=
-            anon;
-        }
+        const response =
+          await fetch(
+            endpoint,
+            {
+              method: "POST",
 
-        const r=await fetch(
-          endpoint,
-          {
-            method:"POST",
+              mode: "cors",
 
-            mode:"cors",
+              credentials: "omit",
 
-            credentials:"omit",
+              cache: "no-store",
 
-            cache:"no-store",
+              headers: {
+                "Content-Type":
+                  "text/plain;charset=UTF-8",
 
-            headers:headers,
+                "Accept":
+                  "application/json"
+              },
 
-            body:JSON.stringify({
-              wallet:wallet
-            })
-          }
-        );
+              body:
+                JSON.stringify({
+                  wallet: wallet
+                })
+            }
+          );
 
-        const responseText=
-          await r.text();
 
-        let data={};
+        const responseText =
+          await response.text();
 
-        try{
 
-          data=
+        let data = {};
+
+
+        try {
+
+          data =
             responseText
-              ?JSON.parse(responseText)
-              :{};
+              ? JSON.parse(
+                  responseText
+                )
+              : {};
 
-        }catch(_){
+        } catch (_) {
 
-          data={};
+          data = {};
         }
 
-        if(!r.ok){
+
+        // HTTP error
+        if (!response.ok) {
 
           throw new Error(
-            data.error||
-            data.message||
+            data.error ||
+            data.message ||
             (
-              "Claim service returned HTTP "+
-              r.status
+              "Claim service returned HTTP " +
+              response.status
             )
           );
         }
 
-        if(!data.success){
+
+        // Function returned unsuccessful result
+        if (!data.success) {
 
           throw new Error(
-            data.error||
-            data.message||
+            data.error ||
+            data.message ||
             "Claim was not completed."
           );
         }
 
-        success.hidden=false;
 
-        successText.textContent=
-          "NFT #"+
-          String(data.tokenId)
-            .padStart(3,"0")+
-          " has been transferred to your wallet. Transaction: "+
+        // -----------------------------
+        // SUCCESS
+        // -----------------------------
+
+        success.hidden =
+          false;
+
+
+        successText.textContent =
+          "NFT #" +
+          String(
+            data.tokenId
+          ).padStart(
+            3,
+            "0"
+          ) +
+          " has been transferred to your wallet. Transaction: " +
           data.txHash;
 
-        button.textContent=
+
+        button.textContent =
           "RECOVERED";
 
-      }catch(e){
+
+      } catch (err) {
 
         console.error(
           "NFT claim error:",
-          e
+          err
         );
+
 
         showError(
-          e&&e.message
-            ?e.message
-            :"Claim service is unavailable. Please try again."
+          err &&
+          err.message
+            ? err.message
+            : "Claim service is unavailable. Please try again."
         );
 
-        button.disabled=false;
 
-        button.textContent=
+        button.disabled =
+          false;
+
+
+        button.textContent =
           "RECOVER NFT";
       }
     }
   );
 
 
+  // -----------------------------
+  // WALLET CHANGED
+  // -----------------------------
+
   window.addEventListener(
     "last404:walletChanged",
-    e=>{
+    function (event) {
 
-      const a=
-        e.detail&&
-        e.detail.address;
+      const address =
+        event.detail &&
+        event.detail.address;
 
-      if(a){
+
+      if (address) {
 
         localStorage.setItem(
           STORAGE_KEY,
-          a
+          address
         );
 
-      }else{
+      } else {
 
         localStorage.removeItem(
           STORAGE_KEY
         );
       }
 
+
       check();
     }
   );
 
 
+  // -----------------------------
+  // STORAGE SYNC
+  // -----------------------------
+
   window.addEventListener(
     "storage",
-    e=>{
+    function (event) {
 
-      if(
-        e.key===STORAGE_KEY
-      ){
+      if (
+        event.key ===
+        STORAGE_KEY
+      ) {
 
         check();
       }
@@ -406,10 +652,15 @@
   );
 
 
+  // -----------------------------
+  // INITIAL LOAD
+  // -----------------------------
+
   window.addEventListener(
     "load",
     check
   );
+
 
   check();
 
