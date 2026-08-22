@@ -90,7 +90,15 @@
       const divisor=10n**BigInt(decimals);
       const required=MINIMUM*divisor;
 
-      balanceEl.textContent=ethers.formatUnits(balance,decimals)+" TL404";
+      function formatUnitsLocal(value, decimals) {
+        const d=10n**BigInt(decimals);
+        const whole=value/d;
+        const frac=value%d;
+        if(frac===0n) return whole.toString()+" TL404";
+        let f=frac.toString().padStart(decimals,"0").replace(/0+$/,"");
+        return whole.toString()+"."+f+" TL404";
+      }
+      balanceEl.textContent=formatUnitsLocal(balance,decimals);
 
       if(balance>=required){
         setStatus("READY TO RECOVER",true);
