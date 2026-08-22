@@ -90,15 +90,7 @@
       const divisor=10n**BigInt(decimals);
       const required=MINIMUM*divisor;
 
-      function formatUnitsLocal(value, decimals) {
-  const d = 10n ** BigInt(decimals);
-  const whole = value / d;
-  const frac = value % d;
-  if (frac === 0n) return whole.toString() + " TL404";
-  let f = frac.toString().padStart(decimals, "0").replace(/0+$/, "");
-  return whole.toString() + "." + f + " TL404";
-}
-      balanceEl.textContent=formatUnitsLocal(balance,decimals);
+      balanceEl.textContent=ethers.formatUnits(balance,decimals)+" TL404";
 
       if(balance>=required){
         setStatus("READY TO RECOVER",true);
@@ -123,32 +115,87 @@
     button.textContent="RECOVERING…";
     error.hidden=true;
 
-    try{
-      const base=(CONFIG.SUPABASE_URL||"").replace(/\/$/,"");
-      const anon=CONFIG.SUPABASE_ANON_KEY||"";
-      if(!base) throw new Error("Claim service is not configured.");
+    try {
+      const base = (CONFIG.SUPABASE_URL || "").replace(/\/+$/, "");
+      const anon = CONFIG.SUPABASE_ANON_KEY || "";
+      if (!base) throw new Error("Claim service is not configured.");
 
-      const r=await fetch(base+"/functions/v1/claim-nft",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          ...(anon?{"apikey":anon,"Authorization":"Bearer "+anon}:{})
-        },
-        body:JSON.stringify({wallet})
-      });
+      // Send the request exactly as Supabase Edge Functions expect.
+      // Keep the public publishable key only; never expose service-role/private keys.
+      const endpoint = base + "/functions/v1/claim-nft";
 
-      const text=await r.text();
-      let data={}; try{data=JSON.parse(text)}catch(_){}
-      if(!r.ok||!data.success) throw new Error(data.error||("Claim service returned HTTP "+r.status));
+      const headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      };
 
-      success.hidden=false;
-      successText.textContent="NFT #"+String(data.tokenId).padStart(3,"0")+" has been transferred to your wallet. Transaction: "+data.txHash;
-      button.textContent="RECOVERED";
-    }catch(e){
-      console.error(e);
-      showError(e && e.message ? e.message : "Claim service is unavailable. Please try again.");
-      button.disabled=false;
-      button.textContent="RECOVER NFT";
+      if (anon) {
+        headers["apikey"] = anon;
+        headers["Authorization"] = "Bearer " + anon;
+      }
+
+      let r;
+      try {
+        r = await fetch(endpoint, {
+          method: "POST",
+          mode: "cors",
+          credentials: "omit",
+          cache: "no-store",
+          headers,
+          body: JSON.stringify({ wallet })
+        });
+      } catch (networkError) {
+        console.error("Claim request network error:", networkError);
+        throw new Error(
+          "Could not reach the claim service. Please try again."
+        );
+      }
+
+      const responseText = await r.text();
+
+      let data = {};
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (_) {
+        data = {};
+      }
+
+      if (!r.ok) {
+        throw new Error(
+          data.error ||
+          data.message ||
+          ("Claim service returned HTTP " + r.status)
+        );
+      }
+
+      if (!data.success) {
+        throw new Error(
+          data.error ||
+          data.message ||
+          "Claim was not completed."
+        );
+      }
+
+      success.hidden = false;
+      successText.textContent =
+        "NFT #" +
+        String(data.tokenId).padStart(3, "0") +
+        " has been transferred to your wallet. Transaction: " +
+        data.txHash;
+
+      button.textContent = "RECOVERED";
+
+    } catch (e) {
+      console.error("NFT claim error:", e);
+
+      showError(
+        e && e.message
+          ? e.message
+          : "Claim service is unavailable. Please try again."
+      );
+
+      button.disabled = false;
+      button.textContent = "RECOVER NFT";
     }
   });
 
