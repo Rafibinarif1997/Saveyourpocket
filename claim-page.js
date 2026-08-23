@@ -33,6 +33,22 @@
   const EXPECTED_CHAIN_ID =
     4663;
 
+  const ROBINHOOD_CHAIN = {
+  chainId: "0x1237",
+  chainName: "Robinhood Chain",
+  nativeCurrency: {
+    name: "Robinhood",
+    symbol: "RHO",
+    decimals: 18
+  },
+  rpcUrls: [
+    "https://rpc.mainnet.chain.robinhood.com"
+  ],
+  blockExplorerUrls: [
+    "https://explorer.mainnet.chain.robinhood.com"
+  ]
+};
+
   const STORAGE_KEY =
     "last404_wallet";
 
