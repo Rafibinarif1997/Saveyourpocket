@@ -1340,6 +1340,260 @@
       check();
     }
   );
+async function updateNFTCounter() {
 
+  try {
+
+    const base =
+      (
+        CONFIG.SUPABASE_URL ||
+        ""
+      ).replace(
+        /\/+$/,
+        ""
+      );
+
+    const anon =
+      CONFIG.SUPABASE_ANON_KEY ||
+      "";
+
+    if (!base) {
+      return;
+    }
+
+    const endpoint =
+      base +
+      "/rest/v1/nft_claims?status=eq.success&select=id";
+
+    const headers = {
+      "Accept":
+        "application/json"
+    };
+
+    if (anon) {
+      headers.apikey =
+        anon;
+    }
+
+    const response =
+      await fetch(
+        endpoint,
+        {
+          method:
+            "GET",
+          headers:
+            headers,
+          cache:
+            "no-store"
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "Could not load NFT counter."
+      );
+    }
+
+    const rows =
+      await response.json();
+
+    const recovered =
+      Array.isArray(rows)
+        ? rows.length
+        : 0;
+
+    const remaining =
+      Math.max(
+        0,
+        TOTAL_SUPPLY -
+          recovered
+      );
+
+    // Create counter box if it doesn't exist
+    let counter =
+      document.getElementById(
+        "last404NFTCounter"
+      );
+
+    if (!counter) {
+
+      counter =
+        document.createElement(
+          "div"
+        );
+
+      counter.id =
+        "last404NFTCounter";
+
+      counter.innerHTML = `
+        <div class="l404-counter-title">
+          NFT SUPPLY
+        </div>
+
+        <div class="l404-counter-grid">
+
+          <div class="l404-counter-item">
+            <div class="l404-counter-number"
+                 id="l404Recovered">
+              ${recovered}
+            </div>
+
+            <div class="l404-counter-label">
+              RECOVERED
+            </div>
+          </div>
+
+          <div class="l404-counter-item">
+            <div class="l404-counter-number"
+                 id="l404Remaining">
+              ${remaining}
+            </div>
+
+            <div class="l404-counter-label">
+              REMAINING
+            </div>
+          </div>
+
+        </div>
+
+        <div class="l404-counter-total">
+          TOTAL SUPPLY: ${TOTAL_SUPPLY}
+        </div>
+      `;
+
+      const style =
+        document.createElement(
+          "style"
+        );
+
+      style.textContent = `
+
+        #last404NFTCounter {
+          width:100%;
+          box-sizing:border-box;
+          margin:24px 0;
+          padding:20px;
+          border:1px solid rgba(255,255,255,.14);
+          border-radius:14px;
+          background:rgba(0,0,0,.28);
+        }
+
+        #last404NFTCounter
+        .l404-counter-title {
+          text-align:center;
+          font-size:10px;
+          letter-spacing:3px;
+          opacity:.55;
+          margin-bottom:18px;
+        }
+
+        #last404NFTCounter
+        .l404-counter-grid {
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:12px;
+        }
+
+        #last404NFTCounter
+        .l404-counter-item {
+          text-align:center;
+          padding:12px 8px;
+          border:1px solid rgba(255,255,255,.10);
+          border-radius:10px;
+        }
+
+        #last404NFTCounter
+        .l404-counter-number {
+          font-size:25px;
+          font-weight:600;
+          line-height:1;
+          margin-bottom:8px;
+        }
+
+        #last404NFTCounter
+        .l404-counter-label {
+          font-size:8px;
+          letter-spacing:2px;
+          opacity:.5;
+        }
+
+        #last404NFTCounter
+        .l404-counter-total {
+          text-align:center;
+          margin-top:14px;
+          font-size:8px;
+          letter-spacing:2px;
+          opacity:.4;
+        }
+
+      `;
+
+      document.head.appendChild(
+        style
+      );
+
+      /*
+       * Put counter before the
+       * recover button when possible.
+       */
+
+      if (
+        button &&
+        button.parentNode
+      ) {
+
+        button.parentNode.insertBefore(
+          counter,
+          button
+        );
+
+      } else {
+
+        document.body.appendChild(
+          counter
+        );
+      }
+    }
+
+    const recoveredEl =
+      document.getElementById(
+        "l404Recovered"
+      );
+
+    const remainingEl =
+      document.getElementById(
+        "l404Remaining"
+      );
+
+    if (recoveredEl) {
+      recoveredEl.textContent =
+        recovered;
+    }
+
+    if (remainingEl) {
+      remainingEl.textContent =
+        remaining;
+    }
+
+    if (
+      remaining === 0 &&
+      button
+    ) {
+
+      button.disabled =
+        true;
+
+      button.textContent =
+        "SOLD OUT";
+    }
+
+  } catch (e) {
+
+    console.error(
+      "NFT counter error:",
+      e
+    );
+  }
+}
 
 })();
