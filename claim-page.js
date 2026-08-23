@@ -5,10 +5,20 @@
     CONFIG.TL404_TOKEN ||
     "0x316eC28D4e69Adf4697F0cA7DE45c164C295eC9d";
 
+  const NFT_CONTRACT =
+    "0x17B9371FED1A1865D97A288d10638c23012de78f";
+
+  const TEAM_WALLET =
+    "0x83243577d3149c34838e0adD665488525C736448";
+
+  const TOTAL_SUPPLY = 404;
   const MINIMUM = 200000n;
 
   const PUBLIC_RPC =
     "https://rpc.mainnet.chain.robinhood.com";
+
+  const STORAGE_KEY =
+    "last404_wallet";
 
   const walletEl =
     document.getElementById("claimWallet");
@@ -31,37 +41,52 @@
   const error =
     document.getElementById("claimError");
 
-  const STORAGE_KEY = "last404_wallet";
 
-  const valid = (address) =>
-    /^0x[a-fA-F0-9]{40}$/.test(address || "");
+  // ==========================================
+  // WALLET
+  // ==========================================
 
-  const checksum = (address) =>
-    address.slice(0, 8) + "…" + address.slice(-6);
+  function valid(address) {
+    return /^0x[a-fA-F0-9]{40}$/.test(
+      address || ""
+    );
+  }
 
 
-  // -----------------------------
-  // GET CONNECTED WALLET
-  // -----------------------------
+  function shortAddress(address) {
+    return (
+      address.slice(0, 8) +
+      "…" +
+      address.slice(-6)
+    );
+  }
+
 
   function getWallet() {
+
     const params =
-      new URLSearchParams(location.search);
-
-    const fromUrl =
-      params.get("wallet");
-
-    if (valid(fromUrl)) {
-      localStorage.setItem(
-        STORAGE_KEY,
-        fromUrl
+      new URLSearchParams(
+        location.search
       );
 
-      return fromUrl;
+    const urlWallet =
+      params.get("wallet");
+
+    if (valid(urlWallet)) {
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        urlWallet
+      );
+
+      return urlWallet;
     }
 
+
     const saved =
-      localStorage.getItem(STORAGE_KEY);
+      localStorage.getItem(
+        STORAGE_KEY
+      );
 
     return valid(saved)
       ? saved
@@ -69,17 +94,19 @@
   }
 
 
-  // -----------------------------
+  // ==========================================
   // STATUS
-  // -----------------------------
+  // ==========================================
 
   function setStatus(
     text,
     eligible = false
   ) {
+
     if (!eligibilityEl) return;
 
-    eligibilityEl.textContent = text;
+    eligibilityEl.textContent =
+      text;
 
     eligibilityEl.classList.toggle(
       "eligible",
@@ -89,28 +116,35 @@
 
 
   function showError(message) {
+
     if (!error) return;
 
     error.hidden = false;
-    error.textContent = message;
+    error.textContent =
+      message;
   }
 
 
-  // -----------------------------
+  // ==========================================
   // RPC
-  // -----------------------------
+  // ==========================================
 
-  async function rpc(method, params) {
+  async function rpc(
+    method,
+    params
+  ) {
+
     const controller =
       new AbortController();
 
-    const timer =
+    const timeout =
       setTimeout(
         () => controller.abort(),
         10000
       );
 
     try {
+
       const response =
         await fetch(
           PUBLIC_RPC,
@@ -133,36 +167,44 @@
           }
         );
 
+
       if (!response.ok) {
+
         throw new Error(
           "RPC HTTP " +
           response.status
         );
       }
 
+
       const data =
         await response.json();
 
+
       if (data.error) {
+
         throw new Error(
           data.error.message ||
           "RPC error"
         );
       }
 
+
       return data.result;
 
     } finally {
-      clearTimeout(timer);
+
+      clearTimeout(timeout);
     }
   }
 
 
-  // -----------------------------
-  // ERC20 BALANCE CALL
-  // -----------------------------
+  // ==========================================
+  // ERC20 balanceOf
+  // ==========================================
 
-  function balanceCall(wallet) {
+  function erc20BalanceCall(wallet) {
+
     return (
       "0x70a08231" +
       wallet
@@ -173,14 +215,31 @@
   }
 
 
-  // -----------------------------
-  // FORMAT BALANCE
-  // -----------------------------
+  // ==========================================
+  // ERC721 balanceOf
+  // ==========================================
+
+  function erc721BalanceCall(wallet) {
+
+    return (
+      "0x70a08231" +
+      wallet
+        .slice(2)
+        .toLowerCase()
+        .padStart(64, "0")
+    );
+  }
+
+
+  // ==========================================
+  // TOKEN FORMAT
+  // ==========================================
 
   function formatUnitsLocal(
     value,
     decimals
   ) {
+
     const divisor =
       10n ** BigInt(decimals);
 
@@ -190,10 +249,15 @@
     const fraction =
       value % divisor;
 
+
     if (fraction === 0n) {
-      return whole.toString() +
-        " TL404";
+
+      return (
+        whole.toString() +
+        " TL404"
+      );
     }
+
 
     const fractionText =
       fraction
@@ -202,7 +266,11 @@
           decimals,
           "0"
         )
-        .replace(/0+$/, "");
+        .replace(
+          /0+$/,
+          ""
+        );
+
 
     return (
       whole.toString() +
@@ -213,24 +281,336 @@
   }
 
 
-  // -----------------------------
-  // CHECK ELIGIBILITY
-  // -----------------------------
+  // ==========================================
+  // NFT COUNTER UI
+  // ==========================================
+
+  function createCounter() {
+
+    let existing =
+      document.getElementById(
+        "last404RecoveryCounter"
+      );
+
+    if (existing) {
+      return existing;
+    }
+
+
+    const box =
+      document.createElement(
+        "div"
+      );
+
+    box.id =
+      "last404RecoveryCounter";
+
+
+    box.innerHTML = `
+      <div class="l404-counter-title">
+        NFT RECOVERY
+      </div>
+
+      <div class="l404-counter-main">
+        <span id="l404Recovered">
+          —
+        </span>
+
+        <span class="l404-counter-total">
+          / 404
+        </span>
+      </div>
+
+      <div class="l404-counter-remaining">
+        <span id="l404Remaining">
+          —
+        </span>
+        REMAINING
+      </div>
+    `;
+
+
+    box.style.cssText = `
+      width:100%;
+      margin:18px 0;
+      padding:18px;
+      box-sizing:border-box;
+      text-align:center;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:12px;
+      background:rgba(0,0,0,.35);
+    `;
+
+
+    const title =
+      box.querySelector(
+        ".l404-counter-title"
+      );
+
+    title.style.cssText = `
+      font-size:11px;
+      letter-spacing:3px;
+      margin-bottom:8px;
+      opacity:.65;
+    `;
+
+
+    const main =
+      box.querySelector(
+        ".l404-counter-main"
+      );
+
+    main.style.cssText = `
+      font-size:30px;
+      font-weight:800;
+      letter-spacing:1px;
+    `;
+
+
+    const total =
+      box.querySelector(
+        ".l404-counter-total"
+      );
+
+    total.style.cssText = `
+      font-size:16px;
+      opacity:.45;
+    `;
+
+
+    const remaining =
+      box.querySelector(
+        ".l404-counter-remaining"
+      );
+
+    remaining.style.cssText = `
+      margin-top:7px;
+      font-size:11px;
+      letter-spacing:2px;
+      opacity:.65;
+    `;
+
+
+    if (
+      button &&
+      button.parentNode
+    ) {
+
+      button.parentNode.insertBefore(
+        box,
+        button
+      );
+
+    } else {
+
+      document.body.appendChild(
+        box
+      );
+    }
+
+
+    return box;
+  }
+
+
+  // ==========================================
+  // UPDATE NFT COUNTER
+  // ==========================================
+
+  async function updateRecoveryCounter() {
+
+    try {
+
+      const box =
+        createCounter();
+
+
+      const recoveredEl =
+        box.querySelector(
+          "#l404Recovered"
+        );
+
+      const remainingEl =
+        box.querySelector(
+          "#l404Remaining"
+        );
+
+
+      const raw =
+        await rpc(
+          "eth_call",
+          [
+            {
+              to: NFT_CONTRACT,
+
+              data:
+                erc721BalanceCall(
+                  TEAM_WALLET
+                )
+            },
+
+            "latest"
+          ]
+        );
+
+
+      const teamNFTBalance =
+        Number(
+          BigInt(raw)
+        );
+
+
+      let recovered =
+        TOTAL_SUPPLY -
+        teamNFTBalance;
+
+
+      if (recovered < 0) {
+        recovered = 0;
+      }
+
+
+      if (
+        recovered >
+        TOTAL_SUPPLY
+      ) {
+        recovered =
+          TOTAL_SUPPLY;
+      }
+
+
+      const remaining =
+        TOTAL_SUPPLY -
+        recovered;
+
+
+      recoveredEl.textContent =
+        recovered;
+
+      remainingEl.textContent =
+        remaining;
+
+
+      // ========================================
+      // SOLD OUT
+      // ========================================
+
+      if (
+        recovered >=
+        TOTAL_SUPPLY
+      ) {
+
+        const title =
+          box.querySelector(
+            ".l404-counter-title"
+          );
+
+        title.textContent =
+          "SOLD OUT";
+
+        title.style.opacity =
+          "1";
+
+
+        if (button) {
+
+          button.disabled =
+            true;
+
+          button.textContent =
+            "SOLD OUT";
+
+          button.style.opacity =
+            "0.55";
+
+          button.style.cursor =
+            "not-allowed";
+        }
+
+
+      } else {
+
+        const title =
+          box.querySelector(
+            ".l404-counter-title"
+          );
+
+        title.textContent =
+          "NFT RECOVERY";
+
+
+        if (
+          button &&
+          button.textContent ===
+            "SOLD OUT"
+        ) {
+
+          button.textContent =
+            "RECOVER NFT";
+
+          button.style.opacity =
+            "1";
+
+          button.style.cursor =
+            "";
+        }
+      }
+
+
+    } catch (err) {
+
+      console.error(
+        "NFT counter error:",
+        err
+      );
+
+      const box =
+        createCounter();
+
+
+      const recoveredEl =
+        box.querySelector(
+          "#l404Recovered"
+        );
+
+      const remainingEl =
+        box.querySelector(
+          "#l404Remaining"
+        );
+
+
+      recoveredEl.textContent =
+        "—";
+
+      remainingEl.textContent =
+        "—";
+    }
+  }
+
+
+  // ==========================================
+  // CHECK TL404
+  // ==========================================
 
   async function check() {
 
     if (!button) return;
 
-    button.disabled = true;
+    button.disabled =
+      true;
+
     button.textContent =
       "RECOVER NFT";
+
 
     if (error) {
       error.hidden = true;
     }
 
+
     const wallet =
       getWallet();
+
 
     if (!wallet) {
 
@@ -253,9 +633,11 @@
 
 
     if (walletEl) {
+
       walletEl.textContent =
-        checksum(wallet);
+        shortAddress(wallet);
     }
+
 
     setStatus(
       "CHECKING…"
@@ -264,18 +646,22 @@
 
     try {
 
-      // Check Robinhood Chain
+      // Chain
       const chain =
         await rpc(
           "eth_chainId",
           []
         );
 
+
       if (
-        Number(BigInt(chain)) !== 4663
+        Number(
+          BigInt(chain)
+        ) !== 4663
       ) {
+
         throw new Error(
-          "Robinhood Chain Mainnet RPC unavailable."
+          "Wrong network."
         );
       }
 
@@ -287,8 +673,10 @@
           [
             {
               to: TL404,
-              data: "0x313ce567"
+              data:
+                "0x313ce567"
             },
+
             "latest"
           ]
         );
@@ -296,7 +684,9 @@
 
       const decimals =
         Number(
-          BigInt(decimalsHex)
+          BigInt(
+            decimalsHex
+          )
         );
 
 
@@ -307,9 +697,13 @@
           [
             {
               to: TL404,
+
               data:
-                balanceCall(wallet)
+                erc20BalanceCall(
+                  wallet
+                )
             },
+
             "latest"
           ]
         );
@@ -322,11 +716,14 @@
       const divisor =
         10n ** BigInt(decimals);
 
+
       const required =
-        MINIMUM * divisor;
+        MINIMUM *
+        divisor;
 
 
       if (balanceEl) {
+
         balanceEl.textContent =
           formatUnitsLocal(
             balance,
@@ -335,7 +732,10 @@
       }
 
 
-      if (balance >= required) {
+      if (
+        balance >=
+        required
+      ) {
 
         setStatus(
           "READY TO RECOVER",
@@ -359,29 +759,36 @@
     } catch (err) {
 
       console.error(
-        "TL404 balance check error:",
+        "TL404 check error:",
         err
       );
+
 
       if (balanceEl) {
         balanceEl.textContent =
           "—";
       }
 
+
       setStatus(
         "CHECK FAILED"
       );
+
 
       showError(
         "Could not check TL404. Please refresh and try again."
       );
     }
+
+
+    // Counter loads independently
+    updateRecoveryCounter();
   }
 
 
-  // ==================================================
+  // ==========================================
   // RECOVER NFT
-  // ==================================================
+  // ==========================================
 
   if (button) {
 
@@ -391,6 +798,7 @@
 
         const wallet =
           getWallet();
+
 
         if (!wallet) {
 
@@ -407,6 +815,7 @@
 
         button.textContent =
           "RECOVERING…";
+
 
         if (error) {
           error.hidden = true;
@@ -425,50 +834,76 @@
             );
 
 
+          const anon =
+            CONFIG.SUPABASE_ANON_KEY ||
+            "";
+
+
           if (!base) {
+
             throw new Error(
               "Claim service is not configured."
             );
           }
 
 
+          /*
+           * IMPORTANT:
+           *
+           * The deployed Edge Function route
+           * shown by Supabase is hyper-task.
+           */
+
           const endpoint =
             base +
             "/functions/v1/hyper-task";
 
 
+          const headers = {
+
+            "Content-Type":
+              "application/json",
+
+            "Accept":
+              "application/json"
+          };
+
+
           /*
-           * Direct Edge Function request.
-           *
-           * The function has JWT verification
-           * disabled, so we don't send a
-           * Bearer token here.
+           * Publishable key is safe
+           * for frontend use.
            */
+
+          if (anon) {
+
+            headers["apikey"] =
+              anon;
+          }
 
 
           const response =
             await fetch(
               endpoint,
               {
-                method: "POST",
+                method:
+                  "POST",
 
-                mode: "cors",
+                mode:
+                  "cors",
 
-                credentials: "omit",
+                credentials:
+                  "omit",
 
-                cache: "no-store",
+                cache:
+                  "no-store",
 
-                headers: {
-                  "Content-Type":
-                    "application/json",
-
-                  "Accept":
-                    "application/json"
-                },
+                headers:
+                  headers,
 
                 body:
                   JSON.stringify({
-                    wallet: wallet
+                    wallet:
+                      wallet
                   })
               }
             );
@@ -480,14 +915,18 @@
 
           let data = {};
 
+
           try {
+
             data =
               responseText
                 ? JSON.parse(
                     responseText
                   )
                 : {};
+
           } catch (_) {
+
             data = {};
           }
 
@@ -515,12 +954,13 @@
           }
 
 
-          // -----------------------------
+          // ==================================
           // SUCCESS
-          // -----------------------------
+          // ==================================
 
           if (success) {
-            success.hidden = false;
+            success.hidden =
+              false;
           }
 
 
@@ -541,11 +981,17 @@
 
           button.textContent =
             "RECOVERED";
-          window.dispatchEvent(
-  new CustomEvent(
-    "last404:nftRecovered"
-  )
-);
+
+
+          /*
+           * Wait for blockchain state
+           * and update counter.
+           */
+
+          setTimeout(
+            updateRecoveryCounter,
+            3000
+          );
 
 
         } catch (err) {
@@ -575,9 +1021,9 @@
   }
 
 
-  // -----------------------------
+  // ==========================================
   // WALLET CHANGED
-  // -----------------------------
+  // ==========================================
 
   window.addEventListener(
     "last404:walletChanged",
@@ -608,9 +1054,9 @@
   );
 
 
-  // -----------------------------
+  // ==========================================
   // STORAGE SYNC
-  // -----------------------------
+  // ==========================================
 
   window.addEventListener(
     "storage",
@@ -620,354 +1066,35 @@
         event.key ===
         STORAGE_KEY
       ) {
+
         check();
       }
     }
   );
 
 
-  // -----------------------------
-  // INITIAL CHECK
-  // -----------------------------
+  // ==========================================
+  // INITIAL LOAD
+  // ==========================================
 
   window.addEventListener(
     "load",
-    check
+    function () {
+
+      createCounter();
+
+      check();
+
+      updateRecoveryCounter();
+    }
   );
+
+
+  // Fallback for already-loaded document
+  createCounter();
 
   check();
 
+  updateRecoveryCounter();
+
 })();
-
-// ==========================================
-// NFT RECOVERY COUNTER
-// ==========================================
-
-const NFT_CONTRACT =
-  "0x17B9371FED1A1865D97A288d10638c23012de78f";
-
-const TEAM_WALLET =
-  "0x83243577d3149c34838e0adD665488525C736448";
-
-const TOTAL_SUPPLY = 404;
-
-const TRANSFER_TOPIC =
-  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
-
-let counterBox = null;
-let counterValue = null;
-let counterRemaining = null;
-
-
-// ------------------------------------------
-// CREATE COUNTER UI
-// ------------------------------------------
-
-function createRecoveryCounter() {
-
-  if (counterBox) return;
-
-  counterBox =
-    document.createElement("div");
-
-  counterBox.id =
-    "last404RecoveryCounter";
-
-  counterBox.innerHTML = `
-    <div class="l404-counter-title">
-      NFT RECOVERY
-    </div>
-
-    <div class="l404-counter-main">
-      <span id="l404Recovered">—</span>
-      <span class="l404-counter-total">/ 404</span>
-    </div>
-
-    <div class="l404-counter-remaining">
-      <span id="l404Remaining">—</span>
-      REMAINING
-    </div>
-  `;
-
-
-  counterBox.style.cssText = `
-    margin:20px 0;
-    padding:18px;
-    border:1px solid rgba(212,175,55,.45);
-    background:rgba(10,10,10,.82);
-    text-align:center;
-    box-sizing:border-box;
-  `;
-
-
-  const title =
-    counterBox.querySelector(
-      ".l404-counter-title"
-    );
-
-  title.style.cssText = `
-    font-size:11px;
-    letter-spacing:3px;
-    opacity:.65;
-    margin-bottom:8px;
-  `;
-
-
-  const main =
-    counterBox.querySelector(
-      ".l404-counter-main"
-    );
-
-  main.style.cssText = `
-    font-size:30px;
-    font-weight:800;
-    letter-spacing:2px;
-  `;
-
-
-  const total =
-    counterBox.querySelector(
-      ".l404-counter-total"
-    );
-
-  total.style.cssText = `
-    opacity:.45;
-    font-size:16px;
-  `;
-
-
-  const remaining =
-    counterBox.querySelector(
-      ".l404-counter-remaining"
-    );
-
-  remaining.style.cssText = `
-    margin-top:8px;
-    font-size:11px;
-    letter-spacing:2px;
-    opacity:.65;
-  `;
-
-
-  counterValue =
-    counterBox.querySelector(
-      "#l404Recovered"
-    );
-
-  counterRemaining =
-    counterBox.querySelector(
-      "#l404Remaining"
-    );
-
-
-  /*
-   * Put counter immediately before
-   * the Recover button.
-   */
-
-  if (button && button.parentNode) {
-
-    button.parentNode.insertBefore(
-      counterBox,
-      button
-    );
-
-  } else {
-
-    document.body.appendChild(
-      counterBox
-    );
-  }
-}
-
-
-// ------------------------------------------
-// ERC721 balanceOf
-// ------------------------------------------
-
-function nftBalanceCall(wallet) {
-
-  return (
-    "0x70a08231" +
-    wallet
-      .slice(2)
-      .toLowerCase()
-      .padStart(64, "0")
-  );
-}
-
-
-// ------------------------------------------
-// UPDATE COUNTER
-// ------------------------------------------
-
-async function updateRecoveryCounter() {
-
-  try {
-
-    createRecoveryCounter();
-
-
-    const raw =
-      await rpc(
-        "eth_call",
-        [
-          {
-            to: NFT_CONTRACT,
-            data:
-              nftBalanceCall(
-                TEAM_WALLET
-              )
-          },
-          "latest"
-        ]
-      );
-
-
-    const teamBalance =
-      Number(
-        BigInt(raw)
-      );
-
-
-    let recovered =
-      TOTAL_SUPPLY -
-      teamBalance;
-
-
-    if (recovered < 0)
-      recovered = 0;
-
-    if (recovered > TOTAL_SUPPLY)
-      recovered = TOTAL_SUPPLY;
-
-
-    const remaining =
-      TOTAL_SUPPLY -
-      recovered;
-
-
-    counterValue.textContent =
-      recovered;
-
-    counterRemaining.textContent =
-      remaining;
-
-
-    // --------------------------------
-    // SOLD OUT
-    // --------------------------------
-
-    if (
-      recovered >= TOTAL_SUPPLY
-    ) {
-
-      counterValue.textContent =
-        "404";
-
-      counterRemaining.textContent =
-        "0";
-
-      const title =
-        counterBox.querySelector(
-          ".l404-counter-title"
-        );
-
-      title.textContent =
-        "SOLD OUT";
-
-      title.style.opacity =
-        "1";
-
-
-      if (button) {
-
-        button.disabled =
-          true;
-
-        button.textContent =
-          "SOLD OUT";
-
-        button.style.opacity =
-          "0.55";
-
-        button.style.cursor =
-          "not-allowed";
-      }
-
-    } else {
-
-      const title =
-        counterBox.querySelector(
-          ".l404-counter-title"
-        );
-
-      title.textContent =
-        "NFT RECOVERY";
-
-
-      if (
-        button &&
-        button.textContent ===
-          "SOLD OUT"
-      ) {
-
-        button.textContent =
-          "RECOVER NFT";
-
-        button.style.opacity =
-          "1";
-
-        button.style.cursor =
-          "";
-      }
-    }
-
-
-  } catch (err) {
-
-    console.error(
-      "Recovery counter error:",
-      err
-    );
-
-    createRecoveryCounter();
-
-    counterValue.textContent =
-      "—";
-
-    counterRemaining.textContent =
-      "—";
-  }
-}
-
-
-// ------------------------------------------
-// INITIALIZE COUNTER
-// ------------------------------------------
-
-window.addEventListener(
-  "load",
-  function () {
-
-    updateRecoveryCounter();
-
-  }
-);
-
-
-// ------------------------------------------
-// REFRESH AFTER SUCCESSFUL CLAIM
-// ------------------------------------------
-
-window.addEventListener(
-  "last404:nftRecovered",
-  function () {
-
-    setTimeout(
-      updateRecoveryCounter,
-      1500
-    );
-
-  }
-);
