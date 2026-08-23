@@ -1326,5 +1326,283 @@
     30000
   );
 
+// =====================================================
+// CONTRACT ADDRESSES
+// =====================================================
 
+function addContractAddresses() {
+
+  if (
+    document.getElementById(
+      "last404ContractAddresses"
+    )
+  ) {
+    return;
+  }
+
+  const box =
+    document.createElement("div");
+
+  box.id =
+    "last404ContractAddresses";
+
+  box.innerHTML = `
+    <div class="l404-ca-title">
+      CONTRACT ADDRESSES
+    </div>
+
+    <div class="l404-ca-item">
+
+      <div class="l404-ca-label">
+        TL404 TOKEN CONTRACT
+      </div>
+
+      <div class="l404-ca-row">
+
+        <span class="l404-ca-address">
+          0x316eC28D4e69Adf4697F0cA7DE45c164C295eC9d
+        </span>
+
+        <button
+          type="button"
+          class="l404-copy-btn"
+          data-address="0x316eC28D4e69Adf4697F0cA7DE45c164C295eC9d"
+        >
+          COPY
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="l404-ca-item">
+
+      <div class="l404-ca-label">
+        NFT CONTRACT
+      </div>
+
+      <div class="l404-ca-row">
+
+        <span class="l404-ca-address">
+          0x17B9371FED1A1865D97A288d10638c23012de78f
+        </span>
+
+        <button
+          type="button"
+          class="l404-copy-btn"
+          data-address="0x17B9371FED1A1865D97A288d10638c23012de78f"
+        >
+          COPY
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  const style =
+    document.createElement("style");
+
+  style.textContent = `
+    #last404ContractAddresses {
+      width:100%;
+      box-sizing:border-box;
+      margin:28px 0 10px;
+      padding:20px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:14px;
+      background:rgba(0,0,0,.28);
+    }
+
+    #last404ContractAddresses .l404-ca-title {
+      text-align:center;
+      font-size:11px;
+      letter-spacing:3px;
+      opacity:.6;
+      margin-bottom:20px;
+    }
+
+    #last404ContractAddresses .l404-ca-item {
+      margin-bottom:18px;
+    }
+
+    #last404ContractAddresses .l404-ca-item:last-child {
+      margin-bottom:0;
+    }
+
+    #last404ContractAddresses .l404-ca-label {
+      font-size:9px;
+      letter-spacing:1.7px;
+      opacity:.55;
+      margin-bottom:8px;
+    }
+
+    #last404ContractAddresses .l404-ca-row {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      width:100%;
+    }
+
+    #last404ContractAddresses .l404-ca-address {
+      flex:1;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-family:monospace;
+      font-size:10px;
+      opacity:.85;
+    }
+
+    #last404ContractAddresses .l404-copy-btn {
+      flex-shrink:0;
+      border:1px solid rgba(255,255,255,.25);
+      background:transparent;
+      color:inherit;
+      padding:7px 10px;
+      border-radius:6px;
+      font-size:9px;
+      letter-spacing:1px;
+      cursor:pointer;
+    }
+
+    #last404ContractAddresses .l404-copy-btn:active {
+      transform:scale(.96);
+    }
+  `;
+
+  document.head.appendChild(style);
+
+  /*
+   * Put it directly AFTER the Recover button.
+   * We query the button again here, so this works
+   * even though the button variable is inside another scope.
+   */
+
+  const recoverButton =
+    document.querySelector(
+      "#claimButton"
+    );
+
+  if (
+    recoverButton &&
+    recoverButton.parentNode
+  ) {
+
+    recoverButton.parentNode.appendChild(
+      box
+    );
+
+  } else {
+
+    /*
+     * Fallback: put it at the bottom of the page.
+     */
+
+    document.body.appendChild(
+      box
+    );
+  }
+
+
+  // COPY BUTTONS
+
+  box
+    .querySelectorAll(
+      ".l404-copy-btn"
+    )
+    .forEach(function (copyButton) {
+
+      copyButton.addEventListener(
+        "click",
+        async function () {
+
+          const address =
+            copyButton.dataset.address;
+
+          try {
+
+            if (
+              navigator.clipboard &&
+              navigator.clipboard.writeText
+            ) {
+
+              await navigator.clipboard.writeText(
+                address
+              );
+
+            } else {
+
+              const textarea =
+                document.createElement(
+                  "textarea"
+                );
+
+              textarea.value =
+                address;
+
+              textarea.style.position =
+                "fixed";
+
+              textarea.style.opacity =
+                "0";
+
+              document.body.appendChild(
+                textarea
+              );
+
+              textarea.select();
+
+              document.execCommand(
+                "copy"
+              );
+
+              textarea.remove();
+            }
+
+
+            const old =
+              copyButton.textContent;
+
+            copyButton.textContent =
+              "COPIED!";
+
+            setTimeout(
+              function () {
+                copyButton.textContent =
+                  old;
+              },
+              1500
+            );
+
+          } catch (err) {
+
+            console.error(
+              "Copy failed:",
+              err
+            );
+          }
+        }
+      );
+    });
+}
+
+
+// Run after page is ready
+
+if (
+  document.readyState ===
+  "loading"
+) {
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    addContractAddresses
+  );
+
+} else {
+
+  addContractAddresses();
+}
 })();
