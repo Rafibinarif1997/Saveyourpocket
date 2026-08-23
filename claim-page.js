@@ -19,7 +19,7 @@
 
   const TOTAL_SUPPLY = 404;
 
-  const REQUIRED_TOKENS = 200000n;
+  const REQUIRED_TOKENS = 404000n;
 
   const RPC =
     "https://rpc.mainnet.chain.robinhood.com";
