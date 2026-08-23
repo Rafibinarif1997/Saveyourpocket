@@ -1595,5 +1595,10 @@ async function updateNFTCounter() {
     );
   }
 }
-
+setInterval(
+  function () {
+    updateNFTCounter();
+  },
+  15000
+);
 })();
