@@ -1,4 +1,10 @@
 (function () {
+  "use strict";
+
+  // =====================================================
+  // CONFIG
+  // =====================================================
+
   const CONFIG = window.LAST404_CONFIG || {};
 
   const TL404 =
@@ -12,13 +18,19 @@
     "0x83243577d3149c34838e0adD665488525C736448";
 
   const TOTAL_SUPPLY = 404;
-  const MINIMUM = 200000n;
 
-  const PUBLIC_RPC =
+  const REQUIRED_TOKENS = 200000n;
+
+  const RPC =
     "https://rpc.mainnet.chain.robinhood.com";
 
   const STORAGE_KEY =
     "last404_wallet";
+
+
+  // =====================================================
+  // EXISTING ELEMENTS
+  // =====================================================
 
   const walletEl =
     document.getElementById("claimWallet");
@@ -42,11 +54,11 @@
     document.getElementById("claimError");
 
 
-  // ==========================================
-  // WALLET
-  // ==========================================
+  // =====================================================
+  // HELPERS
+  // =====================================================
 
-  function valid(address) {
+  function validAddress(address) {
     return /^0x[a-fA-F0-9]{40}$/.test(
       address || ""
     );
@@ -54,10 +66,12 @@
 
 
   function shortAddress(address) {
+    if (!address) return "NOT CONNECTED";
+
     return (
-      address.slice(0, 8) +
-      "…" +
-      address.slice(-6)
+      address.slice(0, 6) +
+      "..." +
+      address.slice(-4)
     );
   }
 
@@ -66,13 +80,13 @@
 
     const params =
       new URLSearchParams(
-        location.search
+        window.location.search
       );
 
     const urlWallet =
       params.get("wallet");
 
-    if (valid(urlWallet)) {
+    if (validAddress(urlWallet)) {
 
       localStorage.setItem(
         STORAGE_KEY,
@@ -88,19 +102,64 @@
         STORAGE_KEY
       );
 
-    return valid(saved)
-      ? saved
-      : null;
+    if (validAddress(saved)) {
+      return saved;
+    }
+
+
+    // Bitget / MetaMask fallback
+    try {
+
+      if (
+        window.ethereum &&
+        Array.isArray(
+          window.ethereum.selectedAddress
+            ? [window.ethereum.selectedAddress]
+            : []
+        )
+      ) {
+
+        const address =
+          window.ethereum.selectedAddress;
+
+        if (validAddress(address)) {
+
+          localStorage.setItem(
+            STORAGE_KEY,
+            address
+          );
+
+          return address;
+        }
+      }
+
+    } catch (_) {}
+
+
+    return null;
   }
 
 
-  // ==========================================
-  // STATUS
-  // ==========================================
+  function showError(message) {
 
-  function setStatus(
+    if (!error) return;
+
+    error.hidden = false;
+    error.textContent = message;
+  }
+
+
+  function hideError() {
+
+    if (!error) return;
+
+    error.hidden = true;
+  }
+
+
+  function setEligibility(
     text,
-    eligible = false
+    eligible
   ) {
 
     if (!eligibilityEl) return;
@@ -110,24 +169,14 @@
 
     eligibilityEl.classList.toggle(
       "eligible",
-      eligible
+      !!eligible
     );
   }
 
 
-  function showError(message) {
-
-    if (!error) return;
-
-    error.hidden = false;
-    error.textContent =
-      message;
-  }
-
-
-  // ==========================================
+  // =====================================================
   // RPC
-  // ==========================================
+  // =====================================================
 
   async function rpc(
     method,
@@ -139,15 +188,18 @@
 
     const timeout =
       setTimeout(
-        () => controller.abort(),
+        function () {
+          controller.abort();
+        },
         10000
       );
+
 
     try {
 
       const response =
         await fetch(
-          PUBLIC_RPC,
+          RPC,
           {
             method: "POST",
 
@@ -159,8 +211,8 @@
             body: JSON.stringify({
               jsonrpc: "2.0",
               id: Date.now(),
-              method,
-              params
+              method: method,
+              params: params
             }),
 
             signal: controller.signal
@@ -199,15 +251,15 @@
   }
 
 
-  // ==========================================
+  // =====================================================
   // ERC20 balanceOf
-  // ==========================================
+  // =====================================================
 
-  function erc20BalanceCall(wallet) {
+  function balanceOfCall(address) {
 
     return (
       "0x70a08231" +
-      wallet
+      address
         .slice(2)
         .toLowerCase()
         .padStart(64, "0")
@@ -215,27 +267,11 @@
   }
 
 
-  // ==========================================
-  // ERC721 balanceOf
-  // ==========================================
+  // =====================================================
+  // FORMAT TL404
+  // =====================================================
 
-  function erc721BalanceCall(wallet) {
-
-    return (
-      "0x70a08231" +
-      wallet
-        .slice(2)
-        .toLowerCase()
-        .padStart(64, "0")
-    );
-  }
-
-
-  // ==========================================
-  // TOKEN FORMAT
-  // ==========================================
-
-  function formatUnitsLocal(
+  function formatToken(
     value,
     decimals
   ) {
@@ -252,14 +288,12 @@
 
     if (fraction === 0n) {
 
-      return (
-        whole.toString() +
-        " TL404"
-      );
+      return whole.toLocaleString() +
+        " TL404";
     }
 
 
-    const fractionText =
+    let fractionText =
       fraction
         .toString()
         .padStart(
@@ -273,7 +307,7 @@
 
 
     return (
-      whole.toString() +
+      whole.toLocaleString() +
       "." +
       fractionText +
       " TL404"
@@ -281,129 +315,191 @@
   }
 
 
-  // ==========================================
-  // NFT COUNTER UI
-  // ==========================================
+  // =====================================================
+  // CREATE GLOBAL COLLECTION INFO
+  // =====================================================
 
-  function createCounter() {
+  function createCollectionInfo() {
 
-    let existing =
+    let box =
       document.getElementById(
-        "last404RecoveryCounter"
+        "last404CollectionInfo"
       );
 
-    if (existing) {
-      return existing;
-    }
+
+    if (box) return box;
 
 
-    const box =
+    box =
       document.createElement(
         "div"
       );
 
     box.id =
-      "last404RecoveryCounter";
+      "last404CollectionInfo";
 
 
     box.innerHTML = `
-      <div class="l404-counter-title">
-        NFT RECOVERY
+
+      <div class="l404-info-title">
+        THE LAST 404
       </div>
 
-      <div class="l404-counter-main">
-        <span id="l404Recovered">
-          —
-        </span>
+      <div class="l404-info-grid">
 
-        <span class="l404-counter-total">
-          / 404
-        </span>
-      </div>
+        <div class="l404-info-item">
 
-      <div class="l404-counter-remaining">
-        <span id="l404Remaining">
-          —
-        </span>
-        REMAINING
+          <div class="l404-info-label">
+            TL404 TOKEN
+          </div>
+
+          <div
+            class="l404-info-value"
+            id="l404TokenBalance"
+          >
+            —
+          </div>
+
+        </div>
+
+
+        <div class="l404-info-item">
+
+          <div class="l404-info-label">
+            NFT RECOVERED
+          </div>
+
+          <div
+            class="l404-info-value"
+            id="l404NFTRecovered"
+          >
+            —
+          </div>
+
+        </div>
+
+
+        <div class="l404-info-item">
+
+          <div class="l404-info-label">
+            NFT REMAINING
+          </div>
+
+          <div
+            class="l404-info-value"
+            id="l404NFTRemaining"
+          >
+            —
+          </div>
+
+        </div>
+
       </div>
     `;
 
 
     box.style.cssText = `
       width:100%;
+      box-sizing:border-box;
       margin:18px 0;
       padding:18px;
-      box-sizing:border-box;
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:14px;
+      background:rgba(0,0,0,.30);
       text-align:center;
-      border:1px solid rgba(255,255,255,.18);
-      border-radius:12px;
-      background:rgba(0,0,0,.35);
     `;
 
 
-    const title =
-      box.querySelector(
-        ".l404-counter-title"
+    const style =
+      document.createElement(
+        "style"
       );
 
-    title.style.cssText = `
-      font-size:11px;
-      letter-spacing:3px;
-      margin-bottom:8px;
-      opacity:.65;
+
+    style.textContent = `
+
+      #last404CollectionInfo
+      .l404-info-title {
+        font-size:11px;
+        letter-spacing:3px;
+        opacity:.6;
+        margin-bottom:15px;
+      }
+
+      #last404CollectionInfo
+      .l404-info-grid {
+        display:grid;
+        grid-template-columns:
+          repeat(3,1fr);
+        gap:10px;
+      }
+
+      #last404CollectionInfo
+      .l404-info-item {
+        padding:10px 5px;
+      }
+
+      #last404CollectionInfo
+      .l404-info-label {
+        font-size:9px;
+        letter-spacing:1.5px;
+        opacity:.55;
+        margin-bottom:7px;
+      }
+
+      #last404CollectionInfo
+      .l404-info-value {
+        font-size:18px;
+        font-weight:800;
+      }
+
+      @media(max-width:520px) {
+
+        #last404CollectionInfo
+        .l404-info-grid {
+          grid-template-columns:
+            1fr;
+          gap:5px;
+        }
+
+      }
+
+      #last404CollectionInfo
+      .l404-soldout {
+        font-size:12px;
+        letter-spacing:2px;
+        margin-top:10px;
+        opacity:.8;
+      }
     `;
 
 
-    const main =
-      box.querySelector(
-        ".l404-counter-main"
-      );
-
-    main.style.cssText = `
-      font-size:30px;
-      font-weight:800;
-      letter-spacing:1px;
-    `;
+    document.head.appendChild(
+      style
+    );
 
 
-    const total =
-      box.querySelector(
-        ".l404-counter-total"
-      );
-
-    total.style.cssText = `
-      font-size:16px;
-      opacity:.45;
-    `;
-
-
-    const remaining =
-      box.querySelector(
-        ".l404-counter-remaining"
-      );
-
-    remaining.style.cssText = `
-      margin-top:7px;
-      font-size:11px;
-      letter-spacing:2px;
-      opacity:.65;
-    `;
+    // Put it before claim area.
+    const parent =
+      button &&
+      button.parentNode
+        ? button.parentNode
+        : document.body;
 
 
     if (
       button &&
-      button.parentNode
+      button.parentNode === parent
     ) {
 
-      button.parentNode.insertBefore(
+      parent.insertBefore(
         box,
         button
       );
 
     } else {
 
-      document.body.appendChild(
+      parent.prepend(
         box
       );
     }
@@ -413,38 +509,49 @@
   }
 
 
-  // ==========================================
+  // =====================================================
   // UPDATE NFT COUNTER
-  // ==========================================
+  // =====================================================
 
-  async function updateRecoveryCounter() {
+  async function updateNFTCounter() {
+
+    const box =
+      createCollectionInfo();
+
+
+    const recoveredEl =
+      box.querySelector(
+        "#l404NFTRecovered"
+      );
+
+    const remainingEl =
+      box.querySelector(
+        "#l404NFTRemaining"
+      );
+
 
     try {
 
-      const box =
-        createCounter();
-
-
-      const recoveredEl =
-        box.querySelector(
-          "#l404Recovered"
-        );
-
-      const remainingEl =
-        box.querySelector(
-          "#l404Remaining"
-        );
-
+      /*
+       * ERC721 balanceOf(TEAM_WALLET)
+       *
+       * This does NOT depend on the
+       * user's connected wallet.
+       *
+       * Therefore it should always work
+       * before and after connecting.
+       */
 
       const raw =
         await rpc(
           "eth_call",
           [
             {
-              to: NFT_CONTRACT,
+              to:
+                NFT_CONTRACT,
 
               data:
-                erc721BalanceCall(
+                balanceOfCall(
                   TEAM_WALLET
                 )
             },
@@ -454,7 +561,7 @@
         );
 
 
-      const teamNFTBalance =
+      const teamBalance =
         Number(
           BigInt(raw)
         );
@@ -462,7 +569,7 @@
 
       let recovered =
         TOTAL_SUPPLY -
-        teamNFTBalance;
+        teamBalance;
 
 
       if (recovered < 0) {
@@ -474,6 +581,7 @@
         recovered >
         TOTAL_SUPPLY
       ) {
+
         recovered =
           TOTAL_SUPPLY;
       }
@@ -485,31 +593,45 @@
 
 
       recoveredEl.textContent =
-        recovered;
+        recovered +
+        " / " +
+        TOTAL_SUPPLY;
+
 
       remainingEl.textContent =
         remaining;
 
 
-      // ========================================
       // SOLD OUT
-      // ========================================
-
       if (
         recovered >=
         TOTAL_SUPPLY
       ) {
 
-        const title =
+        let sold =
           box.querySelector(
-            ".l404-counter-title"
+            ".l404-soldout"
           );
 
-        title.textContent =
-          "SOLD OUT";
 
-        title.style.opacity =
-          "1";
+        if (!sold) {
+
+          sold =
+            document.createElement(
+              "div"
+            );
+
+          sold.className =
+            "l404-soldout";
+
+          box.appendChild(
+            sold
+          );
+        }
+
+
+        sold.textContent =
+          "ALL 404 NFTs RECOVERED";
 
 
         if (button) {
@@ -530,29 +652,13 @@
 
       } else {
 
-        const title =
+        const sold =
           box.querySelector(
-            ".l404-counter-title"
+            ".l404-soldout"
           );
 
-        title.textContent =
-          "NFT RECOVERY";
-
-
-        if (
-          button &&
-          button.textContent ===
-            "SOLD OUT"
-        ) {
-
-          button.textContent =
-            "RECOVER NFT";
-
-          button.style.opacity =
-            "1";
-
-          button.style.cursor =
-            "";
+        if (sold) {
+          sold.remove();
         }
       }
 
@@ -564,23 +670,8 @@
         err
       );
 
-      const box =
-        createCounter();
-
-
-      const recoveredEl =
-        box.querySelector(
-          "#l404Recovered"
-        );
-
-      const remainingEl =
-        box.querySelector(
-          "#l404Remaining"
-        );
-
-
       recoveredEl.textContent =
-        "—";
+        "— / 404";
 
       remainingEl.textContent =
         "—";
@@ -588,25 +679,11 @@
   }
 
 
-  // ==========================================
-  // CHECK TL404
-  // ==========================================
+  // =====================================================
+  // UPDATE CONNECTED USER TOKEN
+  // =====================================================
 
-  async function check() {
-
-    if (!button) return;
-
-    button.disabled =
-      true;
-
-    button.textContent =
-      "RECOVER NFT";
-
-
-    if (error) {
-      error.hidden = true;
-    }
-
+  async function checkTokenBalance() {
 
     const wallet =
       getWallet();
@@ -615,18 +692,25 @@
     if (!wallet) {
 
       if (walletEl) {
+
         walletEl.textContent =
           "NOT CONNECTED";
       }
 
       if (balanceEl) {
+
         balanceEl.textContent =
           "—";
       }
 
-      setStatus(
-        "CONNECT WALLET FIRST"
+      setEligibility(
+        "CONNECT WALLET FIRST",
+        false
       );
+
+      if (button) {
+        button.disabled = true;
+      }
 
       return;
     }
@@ -639,40 +723,22 @@
     }
 
 
-    setStatus(
-      "CHECKING…"
+    setEligibility(
+      "CHECKING…",
+      false
     );
 
 
     try {
 
-      // Chain
-      const chain =
-        await rpc(
-          "eth_chainId",
-          []
-        );
-
-
-      if (
-        Number(
-          BigInt(chain)
-        ) !== 4663
-      ) {
-
-        throw new Error(
-          "Wrong network."
-        );
-      }
-
-
-      // TL404 decimals
       const decimalsHex =
         await rpc(
           "eth_call",
           [
             {
-              to: TL404,
+              to:
+                TL404,
+
               data:
                 "0x313ce567"
             },
@@ -690,16 +756,16 @@
         );
 
 
-      // TL404 balance
       const raw =
         await rpc(
           "eth_call",
           [
             {
-              to: TL404,
+              to:
+                TL404,
 
               data:
-                erc20BalanceCall(
+                balanceOfCall(
                   wallet
                 )
             },
@@ -713,82 +779,103 @@
         BigInt(raw);
 
 
-      const divisor =
-        10n ** BigInt(decimals);
-
-
-      const required =
-        MINIMUM *
-        divisor;
-
-
       if (balanceEl) {
 
         balanceEl.textContent =
-          formatUnitsLocal(
+          formatToken(
             balance,
             decimals
           );
       }
 
 
+      const required =
+        REQUIRED_TOKENS *
+        (
+          10n **
+          BigInt(decimals)
+        );
+
+
       if (
-        balance >=
-        required
+        balance >= required
       ) {
 
-        setStatus(
+        setEligibility(
           "READY TO RECOVER",
           true
         );
 
-        button.disabled =
-          false;
+        if (button) {
+          button.disabled =
+            false;
+        }
 
       } else {
 
-        setStatus(
-          "NOT ELIGIBLE"
+        setEligibility(
+          "NOT ELIGIBLE",
+          false
         );
 
-        button.disabled =
-          true;
+        if (button) {
+          button.disabled =
+            true;
+        }
       }
 
 
     } catch (err) {
 
       console.error(
-        "TL404 check error:",
+        "TL404 balance error:",
         err
       );
-
 
       if (balanceEl) {
         balanceEl.textContent =
           "—";
       }
 
-
-      setStatus(
-        "CHECK FAILED"
+      setEligibility(
+        "CHECK FAILED",
+        false
       );
-
 
       showError(
         "Could not check TL404. Please refresh and try again."
       );
     }
-
-
-    // Counter loads independently
-    updateRecoveryCounter();
   }
 
 
-  // ==========================================
+  // =====================================================
+  // COMPLETE PAGE REFRESH
+  // =====================================================
+
+  async function refreshPage() {
+
+    /*
+     * NFT collection data is GLOBAL.
+     *
+     * Always update it regardless of whether
+     * wallet is connected.
+     */
+
+    updateNFTCounter();
+
+
+    /*
+     * User-specific TL404 eligibility.
+     */
+
+    checkTokenBalance();
+  }
+
+
+  // =====================================================
   // RECOVER NFT
-  // ==========================================
+  // =====================================================
 
   if (button) {
 
@@ -816,10 +903,7 @@
         button.textContent =
           "RECOVERING…";
 
-
-        if (error) {
-          error.hidden = true;
-        }
+        hideError();
 
 
         try {
@@ -848,10 +932,7 @@
 
 
           /*
-           * IMPORTANT:
-           *
-           * The deployed Edge Function route
-           * shown by Supabase is hyper-task.
+           * CURRENT DEPLOYED ROUTE
            */
 
           const endpoint =
@@ -869,14 +950,9 @@
           };
 
 
-          /*
-           * Publishable key is safe
-           * for frontend use.
-           */
-
           if (anon) {
 
-            headers["apikey"] =
+            headers.apikey =
               anon;
           }
 
@@ -954,11 +1030,9 @@
           }
 
 
-          // ==================================
           // SUCCESS
-          // ==================================
-
           if (success) {
+
             success.hidden =
               false;
           }
@@ -984,13 +1058,19 @@
 
 
           /*
-           * Wait for blockchain state
-           * and update counter.
+           * Give blockchain a moment to
+           * update Team Wallet balance.
            */
 
           setTimeout(
-            updateRecoveryCounter,
+            updateNFTCounter,
             3000
+          );
+
+
+          setTimeout(
+            updateNFTCounter,
+            8000
           );
 
 
@@ -1021,9 +1101,9 @@
   }
 
 
-  // ==========================================
-  // WALLET CHANGED
-  // ==========================================
+  // =====================================================
+  // WALLET CHANGE
+  // =====================================================
 
   window.addEventListener(
     "last404:walletChanged",
@@ -1049,52 +1129,202 @@
       }
 
 
-      check();
+      /*
+       * IMPORTANT:
+       *
+       * NFT counter is global.
+       *
+       * Re-rendering wallet data must NOT
+       * remove the counter.
+       */
+
+      setTimeout(
+        refreshPage,
+        50
+      );
     }
   );
 
 
-  // ==========================================
-  // STORAGE SYNC
-  // ==========================================
+  // =====================================================
+  // EIP-1193 WALLET EVENTS
+  // =====================================================
 
-  window.addEventListener(
-    "storage",
-    function (event) {
+  function attachProviderEvents() {
+
+    try {
 
       if (
-        event.key ===
-        STORAGE_KEY
+        window.ethereum &&
+        typeof window.ethereum.on ===
+          "function"
       ) {
 
-        check();
+        window.ethereum.on(
+          "accountsChanged",
+          function (accounts) {
+
+            const address =
+              accounts &&
+              accounts.length
+                ? accounts[0]
+                : null;
+
+
+            if (address) {
+
+              localStorage.setItem(
+                STORAGE_KEY,
+                address
+              );
+
+            } else {
+
+              localStorage.removeItem(
+                STORAGE_KEY
+              );
+            }
+
+
+            setTimeout(
+              refreshPage,
+              100
+            );
+          }
+        );
+
+
+        window.ethereum.on(
+          "chainChanged",
+          function () {
+
+            setTimeout(
+              refreshPage,
+              300
+            );
+          }
+        );
       }
+
+    } catch (err) {
+
+      console.warn(
+        "Provider event setup:",
+        err
+      );
     }
-  );
+  }
 
 
-  // ==========================================
-  // INITIAL LOAD
-  // ==========================================
+  // =====================================================
+  // BITGET / MOBILE DAPP SUPPORT
+  // =====================================================
+
+  /*
+   * Bitget DApp browser can initialize
+   * injected providers after page load.
+   *
+   * So we retry initialization briefly.
+   */
+
+  let providerAttempts = 0;
+
+  const providerTimer =
+    setInterval(
+      function () {
+
+        providerAttempts++;
+
+        attachProviderEvents();
+
+        const wallet =
+          getWallet();
+
+
+        if (
+          wallet ||
+          window.ethereum ||
+          providerAttempts >= 20
+        ) {
+
+          clearInterval(
+            providerTimer
+          );
+
+          refreshPage();
+        }
+
+      },
+      500
+    );
+
+
+  // =====================================================
+  // DOM READY
+  // =====================================================
+
+  function initialize() {
+
+    createCollectionInfo();
+
+    attachProviderEvents();
+
+    refreshPage();
+  }
+
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      initialize
+    );
+
+  } else {
+
+    initialize();
+  }
+
+
+  // =====================================================
+  // PAGE LOAD
+  // =====================================================
 
   window.addEventListener(
     "load",
     function () {
 
-      createCounter();
+      createCollectionInfo();
 
-      check();
+      attachProviderEvents();
 
-      updateRecoveryCounter();
+      refreshPage();
     }
   );
 
 
-  // Fallback for already-loaded document
-  createCounter();
+  // =====================================================
+  // PERIODIC GLOBAL COUNTER REFRESH
+  // =====================================================
 
-  check();
+  /*
+   * Refresh every 30 seconds.
+   *
+   * This keeps the global NFT count updated
+   * even when another user recovers an NFT.
+   */
 
-  updateRecoveryCounter();
+  setInterval(
+    function () {
+
+      updateNFTCounter();
+
+    },
+    30000
+  );
+
 
 })();
