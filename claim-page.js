@@ -434,7 +434,7 @@
 
           const endpoint =
             base +
-            "/functions/v1/claim-nft";
+            "/functions/v1/hyper-task";
 
 
           /*
