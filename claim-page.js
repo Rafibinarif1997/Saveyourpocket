@@ -5,7 +5,8 @@
   // CONFIG
   // =====================================================
 
-  const CONFIG = window.LAST404_CONFIG || {};
+  const CONFIG =
+    window.LAST404_CONFIG || {};
 
   const TL404 =
     CONFIG.TL404_TOKEN ||
@@ -16,142 +17,105 @@
 
   const TEAM_WALLET =
     "0x83243577d3149c34838e0adD665488525C736448";
-  
+
   const BURN_ADDRESS =
-  "0x000000000000000000000000000000000000dEaD";
+    "0x000000000000000000000000000000000000dEaD";
 
-const BURN_AMOUNT =
-  404000n;
+  const BURN_AMOUNT =
+    404000n;
 
-  const TOTAL_SUPPLY = 404;
+  const TOTAL_SUPPLY =
+    404;
 
-  const REQUIRED_TOKENS = 404000n;
-
-  const RPC =
+  const PUBLIC_RPC =
     "https://rpc.mainnet.chain.robinhood.com";
+
+  const EXPECTED_CHAIN_ID =
+    4663;
 
   const STORAGE_KEY =
     "last404_wallet";
 
 
   // =====================================================
-  // EXISTING ELEMENTS
+  // ELEMENTS
   // =====================================================
 
   const walletEl =
-    document.getElementById("claimWallet");
+    document.getElementById(
+      "claimWallet"
+    );
 
   const balanceEl =
-    document.getElementById("claimBalance");
+    document.getElementById(
+      "claimBalance"
+    );
 
   const eligibilityEl =
-    document.getElementById("claimEligibility");
+    document.getElementById(
+      "claimEligibility"
+    );
 
   const button =
-    document.getElementById("claimButton");
+    document.getElementById(
+      "claimButton"
+    );
 
   const success =
-    document.getElementById("claimSuccess");
+    document.getElementById(
+      "claimSuccess"
+    );
 
   const successText =
-    document.getElementById("claimSuccessText");
+    document.getElementById(
+      "claimSuccessText"
+    );
 
   const error =
-    document.getElementById("claimError");
+    document.getElementById(
+      "claimError"
+    );
 
 
   // =====================================================
-  // HELPERS
+  // BASIC HELPERS
   // =====================================================
 
-  function validAddress(address) {
+  function validAddress(
+    address
+  ) {
     return /^0x[a-fA-F0-9]{40}$/.test(
       address || ""
     );
   }
 
 
-  function shortAddress(address) {
-    if (!address) return "NOT CONNECTED";
+  function checksum(
+    address
+  ) {
+    if (!address) {
+      return "NOT CONNECTED";
+    }
 
     return (
-      address.slice(0, 6) +
-      "..." +
-      address.slice(-4)
+      address.slice(0, 8) +
+      "…" +
+      address.slice(-6)
     );
   }
 
 
-  function getWallet() {
-
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    const urlWallet =
-      params.get("wallet");
-
-    if (validAddress(urlWallet)) {
-
-      localStorage.setItem(
-        STORAGE_KEY,
-        urlWallet
-      );
-
-      return urlWallet;
-    }
-
-
-    const saved =
-      localStorage.getItem(
-        STORAGE_KEY
-      );
-
-    if (validAddress(saved)) {
-      return saved;
-    }
-
-
-    // Bitget / MetaMask fallback
-    try {
-
-      if (
-        window.ethereum &&
-        Array.isArray(
-          window.ethereum.selectedAddress
-            ? [window.ethereum.selectedAddress]
-            : []
-        )
-      ) {
-
-        const address =
-          window.ethereum.selectedAddress;
-
-        if (validAddress(address)) {
-
-          localStorage.setItem(
-            STORAGE_KEY,
-            address
-          );
-
-          return address;
-        }
-      }
-
-    } catch (_) {}
-
-
-    return null;
-  }
-
-
-  function showError(message) {
+  function showError(
+    message
+  ) {
 
     if (!error) return;
 
-    error.hidden = false;
-    error.textContent = message;
+    error.hidden =
+      false;
+
+    error.textContent =
+      message;
   }
 
 
@@ -159,13 +123,14 @@ const BURN_AMOUNT =
 
     if (!error) return;
 
-    error.hidden = true;
+    error.hidden =
+      true;
   }
 
 
-  function setEligibility(
+  function setStatus(
     text,
-    eligible
+    eligible = false
   ) {
 
     if (!eligibilityEl) return;
@@ -175,8 +140,82 @@ const BURN_AMOUNT =
 
     eligibilityEl.classList.toggle(
       "eligible",
-      !!eligible
+      eligible
     );
+  }
+
+
+  // =====================================================
+  // WALLET
+  // =====================================================
+
+  function getWallet() {
+
+    const params =
+      new URLSearchParams(
+        location.search
+      );
+
+    const fromUrl =
+      params.get(
+        "wallet"
+      );
+
+    if (
+      validAddress(
+        fromUrl
+      )
+    ) {
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        fromUrl
+      );
+
+      return fromUrl;
+    }
+
+
+    const saved =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    if (
+      validAddress(
+        saved
+      )
+    ) {
+      return saved;
+    }
+
+
+    try {
+
+      if (
+        window.ethereum &&
+        validAddress(
+          window.ethereum
+            .selectedAddress
+        )
+      ) {
+
+        const address =
+          window.ethereum
+            .selectedAddress;
+
+        localStorage.setItem(
+          STORAGE_KEY,
+          address
+        );
+
+        return address;
+      }
+
+    } catch (_) {}
+
+
+    return null;
   }
 
 
@@ -192,12 +231,12 @@ const BURN_AMOUNT =
     const controller =
       new AbortController();
 
-    const timeout =
+    const timer =
       setTimeout(
         function () {
           controller.abort();
         },
-        10000
+        15000
       );
 
 
@@ -205,23 +244,33 @@ const BURN_AMOUNT =
 
       const response =
         await fetch(
-          RPC,
+          PUBLIC_RPC,
           {
-            method: "POST",
+            method:
+              "POST",
 
             headers: {
               "Content-Type":
                 "application/json"
             },
 
-            body: JSON.stringify({
-              jsonrpc: "2.0",
-              id: Date.now(),
-              method: method,
-              params: params
-            }),
+            body:
+              JSON.stringify({
+                jsonrpc:
+                  "2.0",
 
-            signal: controller.signal
+                id:
+                  Date.now(),
+
+                method:
+                  method,
+
+                params:
+                  params
+              }),
+
+            signal:
+              controller.signal
           }
         );
 
@@ -252,7 +301,9 @@ const BURN_AMOUNT =
 
     } finally {
 
-      clearTimeout(timeout);
+      clearTimeout(
+        timer
+      );
     }
   }
 
@@ -261,14 +312,19 @@ const BURN_AMOUNT =
   // ERC20 balanceOf
   // =====================================================
 
-  function balanceOfCall(address) {
+  function balanceCall(
+    wallet
+  ) {
 
     return (
       "0x70a08231" +
-      address
+      wallet
         .slice(2)
         .toLowerCase()
-        .padStart(64, "0")
+        .padStart(
+          64,
+          "0"
+        )
     );
   }
 
@@ -277,29 +333,39 @@ const BURN_AMOUNT =
   // FORMAT TL404
   // =====================================================
 
-  function formatToken(
+  function formatUnitsLocal(
     value,
     decimals
   ) {
 
     const divisor =
-      10n ** BigInt(decimals);
+      10n **
+      BigInt(
+        decimals
+      );
 
     const whole =
-      value / divisor;
+      value /
+      divisor;
 
     const fraction =
-      value % divisor;
+      value %
+      divisor;
 
 
-    if (fraction === 0n) {
+    if (
+      fraction ===
+      0n
+    ) {
 
-      return whole.toLocaleString() +
-        " TL404";
+      return (
+        whole.toString() +
+        " TL404"
+      );
     }
 
 
-    let fractionText =
+    const fractionText =
       fraction
         .toString()
         .padStart(
@@ -313,7 +379,7 @@ const BURN_AMOUNT =
 
 
     return (
-      whole.toLocaleString() +
+      whole.toString() +
       "." +
       fractionText +
       " TL404"
@@ -322,374 +388,53 @@ const BURN_AMOUNT =
 
 
   // =====================================================
-  // CREATE GLOBAL COLLECTION INFO
+  // GET TOKEN DECIMALS
   // =====================================================
 
-  function createCollectionInfo() {
+  async function getTokenDecimals() {
 
-    let box =
-      document.getElementById(
-        "last404CollectionInfo"
+    const result =
+      await rpc(
+        "eth_call",
+        [
+          {
+            to:
+              TL404,
+
+            data:
+              "0x313ce567"
+          },
+
+          "latest"
+        ]
       );
 
 
-    if (box) return box;
-
-
-    box =
-      document.createElement(
-        "div"
-      );
-
-    box.id =
-      "last404CollectionInfo";
-
-
-    box.innerHTML = `
-
-      <div class="l404-info-title">
-        THE LAST 404
-      </div>
-
-      <div class="l404-info-grid">
-
-        <div class="l404-info-item">
-
-          <div class="l404-info-label">
-            TL404 TOKEN
-          </div>
-
-          <div
-            class="l404-info-value"
-            id="l404TokenBalance"
-          >
-            —
-          </div>
-
-        </div>
-
-
-        <div class="l404-info-item">
-
-          <div class="l404-info-label">
-            NFT RECOVERED
-          </div>
-
-          <div
-            class="l404-info-value"
-            id="l404NFTRecovered"
-          >
-            —
-          </div>
-
-        </div>
-
-
-        <div class="l404-info-item">
-
-          <div class="l404-info-label">
-            NFT REMAINING
-          </div>
-
-          <div
-            class="l404-info-value"
-            id="l404NFTRemaining"
-          >
-            —
-          </div>
-
-        </div>
-
-      </div>
-    `;
-
-
-    box.style.cssText = `
-      width:100%;
-      box-sizing:border-box;
-      margin:18px 0;
-      padding:18px;
-      border:1px solid rgba(255,255,255,.15);
-      border-radius:14px;
-      background:rgba(0,0,0,.30);
-      text-align:center;
-    `;
-
-
-    const style =
-      document.createElement(
-        "style"
-      );
-
-
-    style.textContent = `
-
-      #last404CollectionInfo
-      .l404-info-title {
-        font-size:11px;
-        letter-spacing:3px;
-        opacity:.6;
-        margin-bottom:15px;
-      }
-
-      #last404CollectionInfo
-      .l404-info-grid {
-        display:grid;
-        grid-template-columns:
-          repeat(3,1fr);
-        gap:10px;
-      }
-
-      #last404CollectionInfo
-      .l404-info-item {
-        padding:10px 5px;
-      }
-
-      #last404CollectionInfo
-      .l404-info-label {
-        font-size:9px;
-        letter-spacing:1.5px;
-        opacity:.55;
-        margin-bottom:7px;
-      }
-
-      #last404CollectionInfo
-      .l404-info-value {
-        font-size:18px;
-        font-weight:800;
-      }
-
-      @media(max-width:520px) {
-
-        #last404CollectionInfo
-        .l404-info-grid {
-          grid-template-columns:
-            1fr;
-          gap:5px;
-        }
-
-      }
-
-      #last404CollectionInfo
-      .l404-soldout {
-        font-size:12px;
-        letter-spacing:2px;
-        margin-top:10px;
-        opacity:.8;
-      }
-    `;
-
-
-    document.head.appendChild(
-      style
+    return Number(
+      BigInt(
+        result
+      )
     );
-
-
-    // Put it before claim area.
-    const parent =
-      button &&
-      button.parentNode
-        ? button.parentNode
-        : document.body;
-
-
-    if (
-      button &&
-      button.parentNode === parent
-    ) {
-
-      parent.insertBefore(
-        box,
-        button
-      );
-
-    } else {
-
-      parent.prepend(
-        box
-      );
-    }
-
-
-    return box;
   }
 
 
   // =====================================================
-  // UPDATE NFT COUNTER
+  // CHECK USER BALANCE
   // =====================================================
 
-  async function updateNFTCounter() {
+  async function check() {
 
-    const box =
-      createCollectionInfo();
+    hideError();
 
+    if (button) {
 
-    const recoveredEl =
-      box.querySelector(
-        "#l404NFTRecovered"
-      );
+      button.disabled =
+        true;
 
-    const remainingEl =
-      box.querySelector(
-        "#l404NFTRemaining"
-      );
-
-
-    try {
-
-      /*
-       * ERC721 balanceOf(TEAM_WALLET)
-       *
-       * This does NOT depend on the
-       * user's connected wallet.
-       *
-       * Therefore it should always work
-       * before and after connecting.
-       */
-
-      const raw =
-        await rpc(
-          "eth_call",
-          [
-            {
-              to:
-                NFT_CONTRACT,
-
-              data:
-                balanceOfCall(
-                  TEAM_WALLET
-                )
-            },
-
-            "latest"
-          ]
-        );
-
-
-      const teamBalance =
-        Number(
-          BigInt(raw)
-        );
-
-
-      let recovered =
-        TOTAL_SUPPLY -
-        teamBalance;
-
-
-      if (recovered < 0) {
-        recovered = 0;
-      }
-
-
-      if (
-        recovered >
-        TOTAL_SUPPLY
-      ) {
-
-        recovered =
-          TOTAL_SUPPLY;
-      }
-
-
-      const remaining =
-        TOTAL_SUPPLY -
-        recovered;
-
-
-      recoveredEl.textContent =
-        recovered +
-        " / " +
-        TOTAL_SUPPLY;
-
-
-      remainingEl.textContent =
-        remaining;
-
-
-      // SOLD OUT
-      if (
-        recovered >=
-        TOTAL_SUPPLY
-      ) {
-
-        let sold =
-          box.querySelector(
-            ".l404-soldout"
-          );
-
-
-        if (!sold) {
-
-          sold =
-            document.createElement(
-              "div"
-            );
-
-          sold.className =
-            "l404-soldout";
-
-          box.appendChild(
-            sold
-          );
-        }
-
-
-        sold.textContent =
-          "ALL 404 NFTs RECOVERED";
-
-
-        if (button) {
-
-          button.disabled =
-            true;
-
-          button.textContent =
-            "SOLD OUT";
-
-          button.style.opacity =
-            "0.55";
-
-          button.style.cursor =
-            "not-allowed";
-        }
-
-
-      } else {
-
-        const sold =
-          box.querySelector(
-            ".l404-soldout"
-          );
-
-        if (sold) {
-          sold.remove();
-        }
-      }
-
-
-    } catch (err) {
-
-      console.error(
-        "NFT counter error:",
-        err
-      );
-
-      recoveredEl.textContent =
-        "— / 404";
-
-      remainingEl.textContent =
-        "—";
+      button.textContent =
+        "BURN 404,000 TL404 & RECOVER NFT";
     }
-  }
 
-
-  // =====================================================
-  // UPDATE CONNECTED USER TOKEN
-  // =====================================================
-
-  async function checkTokenBalance() {
 
     const wallet =
       getWallet();
@@ -703,20 +448,17 @@ const BURN_AMOUNT =
           "NOT CONNECTED";
       }
 
+
       if (balanceEl) {
 
         balanceEl.textContent =
           "—";
       }
 
-      setEligibility(
-        "CONNECT WALLET FIRST",
-        false
-      );
 
-      if (button) {
-        button.disabled = true;
-      }
+      setStatus(
+        "CONNECT WALLET FIRST"
+      );
 
       return;
     }
@@ -725,41 +467,43 @@ const BURN_AMOUNT =
     if (walletEl) {
 
       walletEl.textContent =
-        shortAddress(wallet);
+        checksum(
+          wallet
+        );
     }
 
 
-    setEligibility(
-      "CHECKING…",
-      false
+    setStatus(
+      "CHECKING…"
     );
 
 
     try {
 
-      const decimalsHex =
+      const chain =
         await rpc(
-          "eth_call",
-          [
-            {
-              to:
-                TL404,
-
-              data:
-                "0x313ce567"
-            },
-
-            "latest"
-          ]
+          "eth_chainId",
+          []
         );
+
+
+      if (
+        Number(
+          BigInt(
+            chain
+          )
+        ) !==
+        EXPECTED_CHAIN_ID
+      ) {
+
+        throw new Error(
+          "Please switch to Robinhood Chain Mainnet."
+        );
+      }
 
 
       const decimals =
-        Number(
-          BigInt(
-            decimalsHex
-          )
-        );
+        await getTokenDecimals();
 
 
       const raw =
@@ -771,7 +515,7 @@ const BURN_AMOUNT =
                 TL404,
 
               data:
-                balanceOfCall(
+                balanceCall(
                   wallet
                 )
             },
@@ -782,105 +526,491 @@ const BURN_AMOUNT =
 
 
       const balance =
-        BigInt(raw);
+        BigInt(
+          raw
+        );
+
+
+      const divisor =
+        10n **
+        BigInt(
+          decimals
+        );
+
+
+      const required =
+        BURN_AMOUNT *
+        divisor;
 
 
       if (balanceEl) {
 
         balanceEl.textContent =
-          formatToken(
+          formatUnitsLocal(
             balance,
             decimals
           );
       }
 
 
-      const required =
-        REQUIRED_TOKENS *
-        (
-          10n **
-          BigInt(decimals)
-        );
-
-
       if (
-        balance >= required
+        balance >=
+        required
       ) {
 
-        setEligibility(
-          "READY TO RECOVER",
+        setStatus(
+          "READY TO BURN & RECOVER",
           true
         );
 
+
         if (button) {
+
           button.disabled =
             false;
+
+          button.textContent =
+            "BURN 404,000 TL404 & RECOVER NFT";
         }
+
 
       } else {
 
-        setEligibility(
-          "NOT ELIGIBLE",
-          false
+        setStatus(
+          "NOT ELIGIBLE"
         );
 
+
         if (button) {
+
           button.disabled =
             true;
+
+          button.textContent =
+            "BURN 404,000 TL404 & RECOVER NFT";
         }
       }
 
 
-    } catch (err) {
+    } catch (e) {
 
       console.error(
-        "TL404 balance error:",
-        err
+        "TL404 check error:",
+        e
       );
 
+
       if (balanceEl) {
+
         balanceEl.textContent =
           "—";
       }
 
-      setEligibility(
-        "CHECK FAILED",
-        false
+
+      setStatus(
+        "CHECK FAILED"
       );
 
+
       showError(
-        "Could not check TL404. Please refresh and try again."
+        e &&
+        e.message
+          ? e.message
+          : "Could not check TL404."
       );
     }
   }
 
 
   // =====================================================
-  // COMPLETE PAGE REFRESH
+  // WAIT FOR TRANSACTION
   // =====================================================
 
-  async function refreshPage() {
+  async function waitForReceipt(
+    txHash
+  ) {
 
-    /*
-     * NFT collection data is GLOBAL.
-     *
-     * Always update it regardless of whether
-     * wallet is connected.
-     */
+    for (
+      let i = 0;
+      i < 60;
+      i++
+    ) {
 
-    updateNFTCounter();
+      const receipt =
+        await rpc(
+          "eth_getTransactionReceipt",
+          [
+            txHash
+          ]
+        );
 
 
-    /*
-     * User-specific TL404 eligibility.
-     */
+      if (receipt) {
 
-    checkTokenBalance();
+        if (
+          receipt.status ===
+          "0x1"
+        ) {
+
+          return receipt;
+        }
+
+
+        throw new Error(
+          "Burn transaction failed or was reverted."
+        );
+      }
+
+
+      await new Promise(
+        function (resolve) {
+
+          setTimeout(
+            resolve,
+            2000
+          );
+
+        }
+      );
+    }
+
+
+    throw new Error(
+      "Transaction confirmation timed out. Please check your wallet transaction."
+    );
   }
 
 
   // =====================================================
-  // RECOVER NFT
+  // CREATE ERC20 TRANSFER DATA
+  // =====================================================
+
+  function createTransferData(
+    decimals
+  ) {
+
+    const amount =
+      BURN_AMOUNT *
+      (
+        10n **
+        BigInt(
+          decimals
+        )
+      );
+
+
+    /*
+     * transfer(address,uint256)
+     *
+     * selector:
+     * 0xa9059cbb
+     */
+
+    const selector =
+      "0xa9059cbb";
+
+
+    const addressData =
+      BURN_ADDRESS
+        .slice(2)
+        .toLowerCase()
+        .padStart(
+          64,
+          "0"
+        );
+
+
+    const amountData =
+      amount
+        .toString(
+          16
+        )
+        .padStart(
+          64,
+          "0"
+        );
+
+
+    return (
+      selector +
+      addressData +
+      amountData
+    );
+  }
+
+
+  // =====================================================
+  // BURN TOKENS
+  // =====================================================
+
+  async function burnTokens(
+    wallet
+  ) {
+
+    if (
+      !window.ethereum ||
+      typeof window.ethereum.request !==
+        "function"
+    ) {
+
+      throw new Error(
+        "Your wallet provider was not found. Please open this page inside your wallet browser."
+      );
+    }
+
+
+    // Ask wallet for current account
+    const accounts =
+      await window.ethereum.request({
+        method:
+          "eth_requestAccounts"
+      });
+
+
+    if (
+      !accounts ||
+      !accounts.length
+    ) {
+
+      throw new Error(
+        "Please connect your wallet first."
+      );
+    }
+
+
+    const connectedWallet =
+      accounts[0];
+
+
+    if (
+      connectedWallet.toLowerCase() !==
+      wallet.toLowerCase()
+    ) {
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        connectedWallet
+      );
+
+      throw new Error(
+        "The connected wallet changed. Please press Recover again."
+      );
+    }
+
+
+    // Check chain
+    const chainId =
+      await window.ethereum.request({
+        method:
+          "eth_chainId"
+      });
+
+
+    if (
+      Number(
+        BigInt(
+          chainId
+        )
+      ) !==
+      EXPECTED_CHAIN_ID
+    ) {
+
+      throw new Error(
+        "Please switch to Robinhood Chain Mainnet."
+      );
+    }
+
+
+    const decimals =
+      await getTokenDecimals();
+
+
+    const data =
+      createTransferData(
+        decimals
+      );
+
+
+    /*
+     * This opens MetaMask / Bitget /
+     * other injected EVM wallet confirmation.
+     *
+     * User does NOT enter 404,000 manually.
+     */
+
+    const txHash =
+      await window.ethereum.request({
+        method:
+          "eth_sendTransaction",
+
+        params: [
+          {
+            from:
+              connectedWallet,
+
+            to:
+              TL404,
+
+            data:
+              data
+          }
+        ]
+      });
+
+
+    if (
+      !txHash
+    ) {
+
+      throw new Error(
+        "No burn transaction hash was returned by the wallet."
+      );
+    }
+
+
+    return txHash;
+  }
+
+
+  // =====================================================
+  // SEND BURN TX TO BACKEND
+  // =====================================================
+
+  async function submitBurn(
+    wallet,
+    burnTxHash
+  ) {
+
+    const base =
+      (
+        CONFIG.SUPABASE_URL ||
+        ""
+      ).replace(
+        /\/+$/,
+        ""
+      );
+
+
+    const anon =
+      CONFIG.SUPABASE_ANON_KEY ||
+      "";
+
+
+    if (!base) {
+
+      throw new Error(
+        "Claim service is not configured."
+      );
+    }
+
+
+    const endpoint =
+      base +
+      "/functions/v1/hyper-task";
+
+
+    const headers = {
+
+      "Content-Type":
+        "application/json",
+
+      "Accept":
+        "application/json"
+    };
+
+
+    /*
+     * JWT verification is OFF on the
+     * deployed function, so only send
+     * the publishable key as apikey.
+     */
+
+    if (anon) {
+
+      headers.apikey =
+        anon;
+    }
+
+
+    const response =
+      await fetch(
+        endpoint,
+        {
+          method:
+            "POST",
+
+          mode:
+            "cors",
+
+          credentials:
+            "omit",
+
+          cache:
+            "no-store",
+
+          headers:
+            headers,
+
+          body:
+            JSON.stringify({
+              wallet:
+                wallet,
+
+              burnTxHash:
+                burnTxHash
+            })
+        }
+      );
+
+
+    const responseText =
+      await response.text();
+
+
+    let data = {};
+
+
+    try {
+
+      data =
+        responseText
+          ? JSON.parse(
+              responseText
+            )
+          : {};
+
+    } catch (_) {}
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.error ||
+        data.message ||
+        (
+          "Claim service returned HTTP " +
+          response.status
+        )
+      );
+    }
+
+
+    if (!data.success) {
+
+      throw new Error(
+        data.error ||
+        data.message ||
+        "NFT recovery was not completed."
+      );
+    }
+
+
+    return data;
+  }
+
+
+  // =====================================================
+  // RECOVER BUTTON
   // =====================================================
 
   if (button) {
@@ -907,136 +1037,58 @@ const BURN_AMOUNT =
           true;
 
         button.textContent =
-          "RECOVERING…";
+          "BURNING 404,000 TL404…";
 
         hideError();
 
 
         try {
 
-          const base =
-            (
-              CONFIG.SUPABASE_URL ||
-              ""
-            ).replace(
-              /\/+$/,
-              ""
+          // ---------------------------------------------
+          // STEP 1
+          // Burn exact amount
+          // ---------------------------------------------
+
+          const burnTxHash =
+            await burnTokens(
+              wallet
             );
 
 
-          const anon =
-            CONFIG.SUPABASE_ANON_KEY ||
-            "";
+          // ---------------------------------------------
+          // STEP 2
+          // Wait for blockchain confirmation
+          // ---------------------------------------------
+
+          button.textContent =
+            "CONFIRMING BURN…";
 
 
-          if (!base) {
-
-            throw new Error(
-              "Claim service is not configured."
-            );
-          }
+          await waitForReceipt(
+            burnTxHash
+          );
 
 
-          /*
-           * CURRENT DEPLOYED ROUTE
-           */
+          // ---------------------------------------------
+          // STEP 3
+          // Backend verifies burn
+          // ---------------------------------------------
 
-          const endpoint =
-            base +
-            "/functions/v1/hyper-task";
-
-
-          const headers = {
-
-            "Content-Type":
-              "application/json",
-
-            "Accept":
-              "application/json"
-          };
+          button.textContent =
+            "RECOVERING NFT…";
 
 
-          if (anon) {
-
-            headers.apikey =
-              anon;
-          }
-
-
-          const response =
-            await fetch(
-              endpoint,
-              {
-                method:
-                  "POST",
-
-                mode:
-                  "cors",
-
-                credentials:
-                  "omit",
-
-                cache:
-                  "no-store",
-
-                headers:
-                  headers,
-
-                body:
-                  JSON.stringify({
-                    wallet:
-                      wallet
-                  })
-              }
+          const data =
+            await submitBurn(
+              wallet,
+              burnTxHash
             );
 
 
-          const responseText =
-            await response.text();
-
-
-          let data = {};
-
-
-          try {
-
-            data =
-              responseText
-                ? JSON.parse(
-                    responseText
-                  )
-                : {};
-
-          } catch (_) {
-
-            data = {};
-          }
-
-
-          if (!response.ok) {
-
-            throw new Error(
-              data.error ||
-              data.message ||
-              (
-                "Claim service returned HTTP " +
-                response.status
-              )
-            );
-          }
-
-
-          if (!data.success) {
-
-            throw new Error(
-              data.error ||
-              data.message ||
-              "Claim was not completed."
-            );
-          }
-
-
+          // ---------------------------------------------
           // SUCCESS
+          // ---------------------------------------------
+
           if (success) {
 
             success.hidden =
@@ -1054,7 +1106,7 @@ const BURN_AMOUNT =
                 3,
                 "0"
               ) +
-              " has been transferred to your wallet. Transaction: " +
+              " has been transferred to your wallet. NFT transaction: " +
               data.txHash;
           }
 
@@ -1064,35 +1116,29 @@ const BURN_AMOUNT =
 
 
           /*
-           * Give blockchain a moment to
-           * update Team Wallet balance.
+           * Refresh balance after burn.
+           * It should now be 404,000 lower.
            */
 
           setTimeout(
-            updateNFTCounter,
+            check,
             3000
           );
 
 
-          setTimeout(
-            updateNFTCounter,
-            8000
-          );
-
-
-        } catch (err) {
+        } catch (e) {
 
           console.error(
-            "NFT claim error:",
-            err
+            "BURN / RECOVERY ERROR:",
+            e
           );
 
 
           showError(
-            err &&
-            err.message
-              ? err.message
-              : "Claim service is unavailable. Please try again."
+            e &&
+            e.message
+              ? e.message
+              : "Burn or NFT recovery failed."
           );
 
 
@@ -1100,7 +1146,7 @@ const BURN_AMOUNT =
             false;
 
           button.textContent =
-            "RECOVER NFT";
+            "BURN 404,000 TL404 & RECOVER NFT";
         }
       }
     );
@@ -1135,25 +1181,16 @@ const BURN_AMOUNT =
       }
 
 
-      /*
-       * IMPORTANT:
-       *
-       * NFT counter is global.
-       *
-       * Re-rendering wallet data must NOT
-       * remove the counter.
-       */
-
       setTimeout(
-        refreshPage,
-        50
+        check,
+        100
       );
     }
   );
 
 
   // =====================================================
-  // EIP-1193 WALLET EVENTS
+  // EIP-1193 EVENTS
   // =====================================================
 
   function attachProviderEvents() {
@@ -1168,7 +1205,9 @@ const BURN_AMOUNT =
 
         window.ethereum.on(
           "accountsChanged",
-          function (accounts) {
+          function (
+            accounts
+          ) {
 
             const address =
               accounts &&
@@ -1193,7 +1232,7 @@ const BURN_AMOUNT =
 
 
             setTimeout(
-              refreshPage,
+              check,
               100
             );
           }
@@ -1205,77 +1244,32 @@ const BURN_AMOUNT =
           function () {
 
             setTimeout(
-              refreshPage,
+              check,
               300
             );
           }
         );
       }
 
-    } catch (err) {
+    } catch (e) {
 
       console.warn(
-        "Provider event setup:",
-        err
+        "Provider event error:",
+        e
       );
     }
   }
 
 
   // =====================================================
-  // BITGET / MOBILE DAPP SUPPORT
-  // =====================================================
-
-  /*
-   * Bitget DApp browser can initialize
-   * injected providers after page load.
-   *
-   * So we retry initialization briefly.
-   */
-
-  let providerAttempts = 0;
-
-  const providerTimer =
-    setInterval(
-      function () {
-
-        providerAttempts++;
-
-        attachProviderEvents();
-
-        const wallet =
-          getWallet();
-
-
-        if (
-          wallet ||
-          window.ethereum ||
-          providerAttempts >= 20
-        ) {
-
-          clearInterval(
-            providerTimer
-          );
-
-          refreshPage();
-        }
-
-      },
-      500
-    );
-
-
-  // =====================================================
-  // DOM READY
+  // INITIALIZE
   // =====================================================
 
   function initialize() {
 
-    createCollectionInfo();
-
     attachProviderEvents();
 
-    refreshPage();
+    check();
   }
 
 
@@ -1295,320 +1289,15 @@ const BURN_AMOUNT =
   }
 
 
-  // =====================================================
-  // PAGE LOAD
-  // =====================================================
-
   window.addEventListener(
     "load",
     function () {
 
-      createCollectionInfo();
-
       attachProviderEvents();
 
-      refreshPage();
+      check();
     }
   );
 
 
-  // =====================================================
-  // PERIODIC GLOBAL COUNTER REFRESH
-  // =====================================================
-
-  /*
-   * Refresh every 30 seconds.
-   *
-   * This keeps the global NFT count updated
-   * even when another user recovers an NFT.
-   */
-
-  setInterval(
-    function () {
-
-      updateNFTCounter();
-
-    },
-    30000
-  );
-
-// =====================================================
-// CONTRACT ADDRESSES
-// =====================================================
-
-function addContractAddresses() {
-
-  if (
-    document.getElementById(
-      "last404ContractAddresses"
-    )
-  ) {
-    return;
-  }
-
-  const box =
-    document.createElement("div");
-
-  box.id =
-    "last404ContractAddresses";
-
-  box.innerHTML = `
-    <div class="l404-ca-title">
-      CONTRACT ADDRESSES
-    </div>
-
-    <div class="l404-ca-item">
-
-      <div class="l404-ca-label">
-        TL404 TOKEN CONTRACT
-      </div>
-
-      <div class="l404-ca-row">
-
-        <span class="l404-ca-address">
-          0x316eC28D4e69Adf4697F0cA7DE45c164C295eC9d
-        </span>
-
-        <button
-          type="button"
-          class="l404-copy-btn"
-          data-address="0x316eC28D4e69Adf4697F0cA7DE45c164C295eC9d"
-        >
-          COPY
-        </button>
-
-      </div>
-
-    </div>
-
-    <div class="l404-ca-item">
-
-      <div class="l404-ca-label">
-        NFT CONTRACT
-      </div>
-
-      <div class="l404-ca-row">
-
-        <span class="l404-ca-address">
-          0x17B9371FED1A1865D97A288d10638c23012de78f
-        </span>
-
-        <button
-          type="button"
-          class="l404-copy-btn"
-          data-address="0x17B9371FED1A1865D97A288d10638c23012de78f"
-        >
-          COPY
-        </button>
-
-      </div>
-
-    </div>
-  `;
-
-  const style =
-    document.createElement("style");
-
-  style.textContent = `
-    #last404ContractAddresses {
-      width:100%;
-      box-sizing:border-box;
-      margin:28px 0 10px;
-      padding:20px;
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:14px;
-      background:rgba(0,0,0,.28);
-    }
-
-    #last404ContractAddresses .l404-ca-title {
-      text-align:center;
-      font-size:11px;
-      letter-spacing:3px;
-      opacity:.6;
-      margin-bottom:20px;
-    }
-
-    #last404ContractAddresses .l404-ca-item {
-      margin-bottom:18px;
-    }
-
-    #last404ContractAddresses .l404-ca-item:last-child {
-      margin-bottom:0;
-    }
-
-    #last404ContractAddresses .l404-ca-label {
-      font-size:9px;
-      letter-spacing:1.7px;
-      opacity:.55;
-      margin-bottom:8px;
-    }
-
-    #last404ContractAddresses .l404-ca-row {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      width:100%;
-    }
-
-    #last404ContractAddresses .l404-ca-address {
-      flex:1;
-      min-width:0;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      font-family:monospace;
-      font-size:10px;
-      opacity:.85;
-    }
-
-    #last404ContractAddresses .l404-copy-btn {
-      flex-shrink:0;
-      border:1px solid rgba(255,255,255,.25);
-      background:transparent;
-      color:inherit;
-      padding:7px 10px;
-      border-radius:6px;
-      font-size:9px;
-      letter-spacing:1px;
-      cursor:pointer;
-    }
-
-    #last404ContractAddresses .l404-copy-btn:active {
-      transform:scale(.96);
-    }
-  `;
-
-  document.head.appendChild(style);
-
-  /*
-   * Put it directly AFTER the Recover button.
-   * We query the button again here, so this works
-   * even though the button variable is inside another scope.
-   */
-
-  const recoverButton =
-    document.querySelector(
-      "#claimButton"
-    );
-
-  if (
-    recoverButton &&
-    recoverButton.parentNode
-  ) {
-
-    recoverButton.parentNode.appendChild(
-      box
-    );
-
-  } else {
-
-    /*
-     * Fallback: put it at the bottom of the page.
-     */
-
-    document.body.appendChild(
-      box
-    );
-  }
-
-
-  // COPY BUTTONS
-
-  box
-    .querySelectorAll(
-      ".l404-copy-btn"
-    )
-    .forEach(function (copyButton) {
-
-      copyButton.addEventListener(
-        "click",
-        async function () {
-
-          const address =
-            copyButton.dataset.address;
-
-          try {
-
-            if (
-              navigator.clipboard &&
-              navigator.clipboard.writeText
-            ) {
-
-              await navigator.clipboard.writeText(
-                address
-              );
-
-            } else {
-
-              const textarea =
-                document.createElement(
-                  "textarea"
-                );
-
-              textarea.value =
-                address;
-
-              textarea.style.position =
-                "fixed";
-
-              textarea.style.opacity =
-                "0";
-
-              document.body.appendChild(
-                textarea
-              );
-
-              textarea.select();
-
-              document.execCommand(
-                "copy"
-              );
-
-              textarea.remove();
-            }
-
-
-            const old =
-              copyButton.textContent;
-
-            copyButton.textContent =
-              "COPIED!";
-
-            setTimeout(
-              function () {
-                copyButton.textContent =
-                  old;
-              },
-              1500
-            );
-
-          } catch (err) {
-
-            console.error(
-              "Copy failed:",
-              err
-            );
-          }
-        }
-      );
-    });
-}
-
-
-// Run after page is ready
-
-if (
-  document.readyState ===
-  "loading"
-) {
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    addContractAddresses
-  );
-
-} else {
-
-  addContractAddresses();
-}
 })();
