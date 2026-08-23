@@ -49,6 +49,70 @@
   ]
 };
 
+  async function ensureRobinhoodNetwork() {
+
+  if (
+    !window.ethereum ||
+    typeof window.ethereum.request !== "function"
+  ) {
+    throw new Error(
+      "Wallet provider not found."
+    );
+  }
+
+  const currentChain =
+    await window.ethereum.request({
+      method: "eth_chainId"
+    });
+
+  if (
+    Number(
+      BigInt(currentChain)
+    ) === EXPECTED_CHAIN_ID
+  ) {
+    return true;
+  }
+
+  try {
+
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [
+        {
+          chainId:
+            ROBINHOOD_CHAIN.chainId
+        }
+      ]
+    });
+
+    return true;
+
+  } catch (switchError) {
+
+    if (
+      switchError &&
+      (
+        switchError.code === 4902 ||
+        switchError.code === -32603
+      )
+    ) {
+
+      await window.ethereum.request({
+        method:
+          "wallet_addEthereumChain",
+
+        params: [
+          ROBINHOOD_CHAIN
+        ]
+      });
+
+      return true;
+    }
+
+    throw switchError;
+  }
+}
+
   const STORAGE_KEY =
     "last404_wallet";
 
