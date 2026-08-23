@@ -31,26 +31,20 @@
   const error =
     document.getElementById("claimError");
 
-  const STORAGE_KEY =
-    "last404_wallet";
-
-
-  // -----------------------------
-  // BASIC HELPERS
-  // -----------------------------
+  const STORAGE_KEY = "last404_wallet";
 
   const valid = (address) =>
     /^0x[a-fA-F0-9]{40}$/.test(address || "");
 
-
   const checksum = (address) =>
-    address.slice(0, 8) +
-    "…" +
-    address.slice(-6);
+    address.slice(0, 8) + "…" + address.slice(-6);
 
+
+  // -----------------------------
+  // GET CONNECTED WALLET
+  // -----------------------------
 
   function getWallet() {
-
     const params =
       new URLSearchParams(location.search);
 
@@ -58,7 +52,6 @@
       params.get("wallet");
 
     if (valid(fromUrl)) {
-
       localStorage.setItem(
         STORAGE_KEY,
         fromUrl
@@ -66,7 +59,6 @@
 
       return fromUrl;
     }
-
 
     const saved =
       localStorage.getItem(STORAGE_KEY);
@@ -77,13 +69,17 @@
   }
 
 
+  // -----------------------------
+  // STATUS
+  // -----------------------------
+
   function setStatus(
     text,
     eligible = false
   ) {
+    if (!eligibilityEl) return;
 
-    eligibilityEl.textContent =
-      text;
+    eligibilityEl.textContent = text;
 
     eligibilityEl.classList.toggle(
       "eligible",
@@ -93,23 +89,18 @@
 
 
   function showError(message) {
+    if (!error) return;
 
     error.hidden = false;
-
-    error.textContent =
-      message;
+    error.textContent = message;
   }
 
 
   // -----------------------------
-  // ROBINHOOD RPC
+  // RPC
   // -----------------------------
 
-  async function rpc(
-    method,
-    params
-  ) {
-
+  async function rpc(method, params) {
     const controller =
       new AbortController();
 
@@ -120,7 +111,6 @@
       );
 
     try {
-
       const response =
         await fetch(
           PUBLIC_RPC,
@@ -135,41 +125,34 @@
             body: JSON.stringify({
               jsonrpc: "2.0",
               id: Date.now(),
-              method: method,
-              params: params
+              method,
+              params
             }),
 
             signal: controller.signal
           }
         );
 
-
       if (!response.ok) {
-
         throw new Error(
           "RPC HTTP " +
           response.status
         );
       }
 
-
       const data =
         await response.json();
 
-
       if (data.error) {
-
         throw new Error(
           data.error.message ||
           "RPC error"
         );
       }
 
-
       return data.result;
 
     } finally {
-
       clearTimeout(timer);
     }
   }
@@ -180,7 +163,6 @@
   // -----------------------------
 
   function balanceCall(wallet) {
-
     return (
       "0x70a08231" +
       wallet
@@ -192,14 +174,13 @@
 
 
   // -----------------------------
-  // FORMAT TOKEN BALANCE
+  // FORMAT BALANCE
   // -----------------------------
 
   function formatUnitsLocal(
     value,
     decimals
   ) {
-
     const divisor =
       10n ** BigInt(decimals);
 
@@ -209,17 +190,12 @@
     const fraction =
       value % divisor;
 
-
     if (fraction === 0n) {
-
-      return (
-        whole.toString() +
-        " TL404"
-      );
+      return whole.toString() +
+        " TL404";
     }
 
-
-    let fractionText =
+    const fractionText =
       fraction
         .toString()
         .padStart(
@@ -227,7 +203,6 @@
           "0"
         )
         .replace(/0+$/, "");
-
 
     return (
       whole.toString() +
@@ -239,30 +214,35 @@
 
 
   // -----------------------------
-  // CHECK WALLET / BALANCE
+  // CHECK ELIGIBILITY
   // -----------------------------
 
   async function check() {
 
-    error.hidden = true;
+    if (!button) return;
 
     button.disabled = true;
-
     button.textContent =
       "RECOVER NFT";
 
+    if (error) {
+      error.hidden = true;
+    }
 
     const wallet =
       getWallet();
 
-
     if (!wallet) {
 
-      walletEl.textContent =
-        "NOT CONNECTED";
+      if (walletEl) {
+        walletEl.textContent =
+          "NOT CONNECTED";
+      }
 
-      balanceEl.textContent =
-        "—";
+      if (balanceEl) {
+        balanceEl.textContent =
+          "—";
+      }
 
       setStatus(
         "CONNECT WALLET FIRST"
@@ -272,8 +252,10 @@
     }
 
 
-    walletEl.textContent =
-      checksum(wallet);
+    if (walletEl) {
+      walletEl.textContent =
+        checksum(wallet);
+    }
 
     setStatus(
       "CHECKING…"
@@ -282,27 +264,23 @@
 
     try {
 
-      // Check chain
+      // Check Robinhood Chain
       const chain =
         await rpc(
           "eth_chainId",
           []
         );
 
-
       if (
-        Number(
-          BigInt(chain)
-        ) !== 4663
+        Number(BigInt(chain)) !== 4663
       ) {
-
         throw new Error(
           "Robinhood Chain Mainnet RPC unavailable."
         );
       }
 
 
-      // Get TL404 decimals
+      // TL404 decimals
       const decimalsHex =
         await rpc(
           "eth_call",
@@ -322,7 +300,7 @@
         );
 
 
-      // Get wallet balance
+      // TL404 balance
       const raw =
         await rpc(
           "eth_call",
@@ -344,21 +322,20 @@
       const divisor =
         10n ** BigInt(decimals);
 
-
       const required =
         MINIMUM * divisor;
 
 
-      balanceEl.textContent =
-        formatUnitsLocal(
-          balance,
-          decimals
-        );
+      if (balanceEl) {
+        balanceEl.textContent =
+          formatUnitsLocal(
+            balance,
+            decimals
+          );
+      }
 
 
-      if (
-        balance >= required
-      ) {
+      if (balance >= required) {
 
         setStatus(
           "READY TO RECOVER",
@@ -382,12 +359,14 @@
     } catch (err) {
 
       console.error(
-        "TL404 check error:",
+        "TL404 balance check error:",
         err
       );
 
-      balanceEl.textContent =
-        "—";
+      if (balanceEl) {
+        balanceEl.textContent =
+          "—";
+      }
 
       setStatus(
         "CHECK FAILED"
@@ -404,200 +383,191 @@
   // RECOVER NFT
   // ==================================================
 
-  button.addEventListener(
-    "click",
-    async function () {
+  if (button) {
 
-      const wallet =
-        getWallet();
+    button.addEventListener(
+      "click",
+      async function () {
 
+        const wallet =
+          getWallet();
 
-      if (!wallet) {
+        if (!wallet) {
 
-        showError(
-          "Connect your wallet first."
-        );
-
-        return;
-      }
-
-
-      button.disabled =
-        true;
-
-      button.textContent =
-        "RECOVERING…";
-
-      error.hidden =
-        true;
-
-
-      try {
-
-        const base =
-          (
-            CONFIG.SUPABASE_URL ||
-            ""
-          ).replace(
-            /\/+$/,
-            ""
+          showError(
+            "Connect your wallet first."
           );
 
-
-        if (!base) {
-
-          throw new Error(
-            "Claim service is not configured."
-          );
+          return;
         }
 
 
-        const endpoint =
-          base +
-          "/functions/v1/claim-nft";
+        button.disabled =
+          true;
 
+        button.textContent =
+          "RECOVERING…";
 
-        /*
-         * IMPORTANT:
-         *
-         * We intentionally do NOT send:
-         *
-         * Authorization
-         * apikey
-         *
-         * headers here.
-         *
-         * Your function has JWT verification disabled.
-         *
-         * Using text/plain also avoids the browser's
-         * application/json preflight.
-         */
-
-
-        const response =
-          await fetch(
-            endpoint,
-            {
-              method: "POST",
-
-              mode: "cors",
-
-              credentials: "omit",
-
-              cache: "no-store",
-
-              headers: {
-                "Content-Type":
-                  "text/plain;charset=UTF-8",
-
-                "Accept":
-                  "application/json"
-              },
-
-              body:
-                JSON.stringify({
-                  wallet: wallet
-                })
-            }
-          );
-
-
-        const responseText =
-          await response.text();
-
-
-        let data = {};
+        if (error) {
+          error.hidden = true;
+        }
 
 
         try {
 
-          data =
-            responseText
-              ? JSON.parse(
-                  responseText
-                )
-              : {};
-
-        } catch (_) {
-
-          data = {};
-        }
-
-
-        // HTTP error
-        if (!response.ok) {
-
-          throw new Error(
-            data.error ||
-            data.message ||
+          const base =
             (
-              "Claim service returned HTTP " +
-              response.status
-            )
+              CONFIG.SUPABASE_URL ||
+              ""
+            ).replace(
+              /\/+$/,
+              ""
+            );
+
+
+          if (!base) {
+            throw new Error(
+              "Claim service is not configured."
+            );
+          }
+
+
+          const endpoint =
+            base +
+            "/functions/v1/claim-nft";
+
+
+          /*
+           * Direct Edge Function request.
+           *
+           * The function has JWT verification
+           * disabled, so we don't send a
+           * Bearer token here.
+           */
+
+
+          const response =
+            await fetch(
+              endpoint,
+              {
+                method: "POST",
+
+                mode: "cors",
+
+                credentials: "omit",
+
+                cache: "no-store",
+
+                headers: {
+                  "Content-Type":
+                    "application/json",
+
+                  "Accept":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify({
+                    wallet: wallet
+                  })
+              }
+            );
+
+
+          const responseText =
+            await response.text();
+
+
+          let data = {};
+
+          try {
+            data =
+              responseText
+                ? JSON.parse(
+                    responseText
+                  )
+                : {};
+          } catch (_) {
+            data = {};
+          }
+
+
+          if (!response.ok) {
+
+            throw new Error(
+              data.error ||
+              data.message ||
+              (
+                "Claim service returned HTTP " +
+                response.status
+              )
+            );
+          }
+
+
+          if (!data.success) {
+
+            throw new Error(
+              data.error ||
+              data.message ||
+              "Claim was not completed."
+            );
+          }
+
+
+          // -----------------------------
+          // SUCCESS
+          // -----------------------------
+
+          if (success) {
+            success.hidden = false;
+          }
+
+
+          if (successText) {
+
+            successText.textContent =
+              "NFT #" +
+              String(
+                data.tokenId
+              ).padStart(
+                3,
+                "0"
+              ) +
+              " has been transferred to your wallet. Transaction: " +
+              data.txHash;
+          }
+
+
+          button.textContent =
+            "RECOVERED";
+
+
+        } catch (err) {
+
+          console.error(
+            "NFT claim error:",
+            err
           );
-        }
 
 
-        // Function returned unsuccessful result
-        if (!data.success) {
-
-          throw new Error(
-            data.error ||
-            data.message ||
-            "Claim was not completed."
+          showError(
+            err &&
+            err.message
+              ? err.message
+              : "Claim service is unavailable. Please try again."
           );
+
+
+          button.disabled =
+            false;
+
+          button.textContent =
+            "RECOVER NFT";
         }
-
-
-        // -----------------------------
-        // SUCCESS
-        // -----------------------------
-
-        success.hidden =
-          false;
-
-
-        successText.textContent =
-          "NFT #" +
-          String(
-            data.tokenId
-          ).padStart(
-            3,
-            "0"
-          ) +
-          " has been transferred to your wallet. Transaction: " +
-          data.txHash;
-
-
-        button.textContent =
-          "RECOVERED";
-
-
-      } catch (err) {
-
-        console.error(
-          "NFT claim error:",
-          err
-        );
-
-
-        showError(
-          err &&
-          err.message
-            ? err.message
-            : "Claim service is unavailable. Please try again."
-        );
-
-
-        button.disabled =
-          false;
-
-
-        button.textContent =
-          "RECOVER NFT";
       }
-    }
-  );
+    );
+  }
 
 
   // -----------------------------
@@ -645,7 +615,6 @@
         event.key ===
         STORAGE_KEY
       ) {
-
         check();
       }
     }
@@ -653,14 +622,13 @@
 
 
   // -----------------------------
-  // INITIAL LOAD
+  // INITIAL CHECK
   // -----------------------------
 
   window.addEventListener(
     "load",
     check
   );
-
 
   check();
 
