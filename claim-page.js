@@ -560,26 +560,7 @@
 
     try {
 
-      const chain =
-        await rpc(
-          "eth_chainId",
-          []
-        );
-
-
-      if (
-        Number(
-          BigInt(
-            chain
-          )
-        ) !==
-        EXPECTED_CHAIN_ID
-      ) {
-
-        throw new Error(
-          "Please switch to Robinhood Chain Mainnet."
-        );
-      }
+     await ensureRobinhoodNetwork();
 
 
       const decimals =
@@ -879,26 +860,7 @@
 
 
     // Check chain
-    const chainId =
-      await window.ethereum.request({
-        method:
-          "eth_chainId"
-      });
-
-
-    if (
-      Number(
-        BigInt(
-          chainId
-        )
-      ) !==
-      EXPECTED_CHAIN_ID
-    ) {
-
-      throw new Error(
-        "Please switch to Robinhood Chain Mainnet."
-      );
-    }
+    await ensureRobinhoodNetwork();
 
 
     const decimals =
