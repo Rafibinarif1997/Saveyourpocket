@@ -541,6 +541,11 @@
 
           button.textContent =
             "RECOVERED";
+          window.dispatchEvent(
+  new CustomEvent(
+    "last404:nftRecovered"
+  )
+);
 
 
         } catch (err) {
@@ -633,3 +638,336 @@
   check();
 
 })();
+
+// ==========================================
+// NFT RECOVERY COUNTER
+// ==========================================
+
+const NFT_CONTRACT =
+  "0x17B9371FED1A1865D97A288d10638c23012de78f";
+
+const TEAM_WALLET =
+  "0x83243577d3149c34838e0adD665488525C736448";
+
+const TOTAL_SUPPLY = 404;
+
+const TRANSFER_TOPIC =
+  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
+let counterBox = null;
+let counterValue = null;
+let counterRemaining = null;
+
+
+// ------------------------------------------
+// CREATE COUNTER UI
+// ------------------------------------------
+
+function createRecoveryCounter() {
+
+  if (counterBox) return;
+
+  counterBox =
+    document.createElement("div");
+
+  counterBox.id =
+    "last404RecoveryCounter";
+
+  counterBox.innerHTML = `
+    <div class="l404-counter-title">
+      NFT RECOVERY
+    </div>
+
+    <div class="l404-counter-main">
+      <span id="l404Recovered">—</span>
+      <span class="l404-counter-total">/ 404</span>
+    </div>
+
+    <div class="l404-counter-remaining">
+      <span id="l404Remaining">—</span>
+      REMAINING
+    </div>
+  `;
+
+
+  counterBox.style.cssText = `
+    margin:20px 0;
+    padding:18px;
+    border:1px solid rgba(212,175,55,.45);
+    background:rgba(10,10,10,.82);
+    text-align:center;
+    box-sizing:border-box;
+  `;
+
+
+  const title =
+    counterBox.querySelector(
+      ".l404-counter-title"
+    );
+
+  title.style.cssText = `
+    font-size:11px;
+    letter-spacing:3px;
+    opacity:.65;
+    margin-bottom:8px;
+  `;
+
+
+  const main =
+    counterBox.querySelector(
+      ".l404-counter-main"
+    );
+
+  main.style.cssText = `
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:2px;
+  `;
+
+
+  const total =
+    counterBox.querySelector(
+      ".l404-counter-total"
+    );
+
+  total.style.cssText = `
+    opacity:.45;
+    font-size:16px;
+  `;
+
+
+  const remaining =
+    counterBox.querySelector(
+      ".l404-counter-remaining"
+    );
+
+  remaining.style.cssText = `
+    margin-top:8px;
+    font-size:11px;
+    letter-spacing:2px;
+    opacity:.65;
+  `;
+
+
+  counterValue =
+    counterBox.querySelector(
+      "#l404Recovered"
+    );
+
+  counterRemaining =
+    counterBox.querySelector(
+      "#l404Remaining"
+    );
+
+
+  /*
+   * Put counter immediately before
+   * the Recover button.
+   */
+
+  if (button && button.parentNode) {
+
+    button.parentNode.insertBefore(
+      counterBox,
+      button
+    );
+
+  } else {
+
+    document.body.appendChild(
+      counterBox
+    );
+  }
+}
+
+
+// ------------------------------------------
+// ERC721 balanceOf
+// ------------------------------------------
+
+function nftBalanceCall(wallet) {
+
+  return (
+    "0x70a08231" +
+    wallet
+      .slice(2)
+      .toLowerCase()
+      .padStart(64, "0")
+  );
+}
+
+
+// ------------------------------------------
+// UPDATE COUNTER
+// ------------------------------------------
+
+async function updateRecoveryCounter() {
+
+  try {
+
+    createRecoveryCounter();
+
+
+    const raw =
+      await rpc(
+        "eth_call",
+        [
+          {
+            to: NFT_CONTRACT,
+            data:
+              nftBalanceCall(
+                TEAM_WALLET
+              )
+          },
+          "latest"
+        ]
+      );
+
+
+    const teamBalance =
+      Number(
+        BigInt(raw)
+      );
+
+
+    let recovered =
+      TOTAL_SUPPLY -
+      teamBalance;
+
+
+    if (recovered < 0)
+      recovered = 0;
+
+    if (recovered > TOTAL_SUPPLY)
+      recovered = TOTAL_SUPPLY;
+
+
+    const remaining =
+      TOTAL_SUPPLY -
+      recovered;
+
+
+    counterValue.textContent =
+      recovered;
+
+    counterRemaining.textContent =
+      remaining;
+
+
+    // --------------------------------
+    // SOLD OUT
+    // --------------------------------
+
+    if (
+      recovered >= TOTAL_SUPPLY
+    ) {
+
+      counterValue.textContent =
+        "404";
+
+      counterRemaining.textContent =
+        "0";
+
+      const title =
+        counterBox.querySelector(
+          ".l404-counter-title"
+        );
+
+      title.textContent =
+        "SOLD OUT";
+
+      title.style.opacity =
+        "1";
+
+
+      if (button) {
+
+        button.disabled =
+          true;
+
+        button.textContent =
+          "SOLD OUT";
+
+        button.style.opacity =
+          "0.55";
+
+        button.style.cursor =
+          "not-allowed";
+      }
+
+    } else {
+
+      const title =
+        counterBox.querySelector(
+          ".l404-counter-title"
+        );
+
+      title.textContent =
+        "NFT RECOVERY";
+
+
+      if (
+        button &&
+        button.textContent ===
+          "SOLD OUT"
+      ) {
+
+        button.textContent =
+          "RECOVER NFT";
+
+        button.style.opacity =
+          "1";
+
+        button.style.cursor =
+          "";
+      }
+    }
+
+
+  } catch (err) {
+
+    console.error(
+      "Recovery counter error:",
+      err
+    );
+
+    createRecoveryCounter();
+
+    counterValue.textContent =
+      "—";
+
+    counterRemaining.textContent =
+      "—";
+  }
+}
+
+
+// ------------------------------------------
+// INITIALIZE COUNTER
+// ------------------------------------------
+
+window.addEventListener(
+  "load",
+  function () {
+
+    updateRecoveryCounter();
+
+  }
+);
+
+
+// ------------------------------------------
+// REFRESH AFTER SUCCESSFUL CLAIM
+// ------------------------------------------
+
+window.addEventListener(
+  "last404:nftRecovered",
+  function () {
+
+    setTimeout(
+      updateRecoveryCounter,
+      1500
+    );
+
+  }
+);
